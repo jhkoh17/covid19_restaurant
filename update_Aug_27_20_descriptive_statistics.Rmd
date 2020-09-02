@@ -1,0 +1,1021 @@
+---
+title: 'COVID-19 Project: Data and Descriptive Staitsitcs'
+author: "Jung Hwan Koh"
+date: "8/27/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE)
+library(ggplot2)
+library(viridis)
+library(xtable)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+```
+
+# Datasets, Variables, and Descriptive Statistics 
+## Datasets
+The datesets are retrived from the *Open Data Source: 열린테이터 광장*(ODS) of the Seoul Metropolitan Government. 
+
+The datasets aims providing information and support for local small business owners, or prospective owners. They are in a category of the dataset: *Our Small Store: 우리마을가게*. 
+
+### Description:
+
+- Time: 2015Q1 to 2020 Q1 
+- Time Frequency: Quarter (Monthly datasets may be available)
+
+```{r, echo=FALSE, include=FALSE, results='asis'}
+# load(file="df.Rdata")
+# temp <- as.data.frame.matrix(table(df1$STDR_YY_CD, df1$STDR_QU_CD))
+# save(temp, file='temp.Rdata')
+
+load(file='temp.Rdata')
+kable(temp, caption="No. of Observation Over Time") %>% add_header_above(c("Quarter"=5)) %>% pack_rows(index=c("Year"=6))
+
+```
+
+### Markets:
+- Small(골목시장):
+- Developed(발달상권):
+- Old(전통시장):
+- Speical Tourist(관광특구):
+
+```{r, echo=TRUE, warning=FALSE}
+# df.mkt <- unique(df[c('STDR_YY_CD', 'STDR_QU_CD', 'TRDAR_CD', 'TRDAR_SE_CD')])
+# temp2 <- as.data.frame.matrix(ftable(df.mkt$STDR_YY_CD, df.mkt$STDR_QU_CD, df.mkt$TRDAR_SE_CD))
+# 
+# table(df.mkt$TRDAR_SE_CD)
+# value.mkt <- unique(df$TRDAR_SE_CD)
+# new.name <- c("Samll", "Developed", "Old", "Tourist")
+# j <- 1
+# for(i in value.mkt){ 
+#   df.mkt$TRDAR_SE_CD[df.mkt$TRDAR_SE_CD==i] <- new.name[j]
+#   j <- j+1
+# }
+# 
+# mkt.table <- ftable(df.mkt$STDR_YY_CD, df.mkt$STDR_QU_CD, df.mkt$TRDAR_SE_CD, dnn=(c("Year", "Qtr", "Market Type"))) 
+
+# save(mkt.table, file="mkt_table.Rdata")
+load(file="mkt_table.Rdata")
+mkt.table
+```
+
+### Industry(업종): 
+- Before 2019: 45 caterogries of small business  
+- Since 2019: 100 caterogries of small business
+
+The following table is the summary of business categories.
+
+```{r, warning=FALSE, echo=FALSE}
+# changed of industry cate
+# years = seq(2015, 2020)
+# tables = list()
+# 
+# for( y in years){
+#   print(y)
+#   temp <- df[df$STDR_YY_CD==y,]
+#   y.table <- unique(temp[c('SVC_INDUTY_CD_NM','SVC_INDUTY_CD')])
+#   y.df <- as.data.frame(y.table)
+#   rownames(y.df) <- NULL
+#   colnames(y.df) <- c('SVC_INDUTY_CD_NM','SVC_INDUTY_CD')
+#   # y.df <- y.df[order(df$SVC_INDUTY_CD_NM),]
+#   y.str <- paste(y)
+#   tables[[y.str]] = y.df
+# }
+# tables <- lapply(tables, FUN=as.data.frame)
+# 
+# # clean svc code 
+# library('stringr')
+# library(readr)
+# tables1 <- lapply(tables, function(x) x['SVC_INDUTY_CD_NM']<- str_trim(x['SVC_INDUTY_CD_NM']))
+# 
+# tables1 <- list()
+# for( l in names(tables)){
+#   l.temp <- as.data.frame(tables[l])
+#   colnames(l.temp) <- c('SVC_INDUTY_CD_NM','SVC_INDUTY_CD')
+#   l.temp['SVC_INDUTY_CD_NM']<- gsub(" ", "", l.temp$SVC_INDUTY_CD_NM)
+#   l.temp<- l.temp[order(l.temp$SVC_INDUTY_CD_NM),]
+#   SCV_CD <- parse_number(l.temp$SVC_INDUTY_CD)
+#   dat.mkt <- cbind(l.temp, SCV_CD)
+#   tables1[[l]] <- dat.mkt
+# }
+# tables1$`2015` == tables1$`2016`
+# tables1$`2016` == tables1$`2017`
+# tables1$`2017` == tables1$`2018`
+# 
+# tables1$`2019`
+# 
+# svc_combined <- merge(tables1$`2019`, tables1$`2015`, by =c("SVC_INDUTY_CD_NM"), 
+#                       all.x=TRUE)
+# 
+# svc_combined1 <- merge(tables1$`2019`, tables1$`2015`, by =c("SVC_INDUTY_CD_NM"),
+#                       all.y = TRUE)
+# 
+# 
+# svc_combind2 <- rbind(svc_combined, svc_combined1)
+# svc_c2 <- svc_combind2[order(svc_combind2$SVC_INDUTY_CD_NM),]
+# 
+# svc_c2$svc_cd <- svc_c2$SCV_CD.x
+# 
+# # svc_c2$svc_cd[svc_c2$SVC_INDUTY_CD_NM==] <- 
+# 
+# # 300031  "가구·가전"
+# # 300006  "건강보조식품"     
+# # 200028  "두발미용업"
+# # 300020  "서적·문구"      
+# # 200031  "세탁소(가정)"
+# # 200034  "숙박업"
+# # 300010  "식료품"
+# # 200003  "예체능학원"      
+# # 
+# # 200021  "오락·운동"       
+# # 300011  "의류점" 
+# # 300018  "의약·의료용품"   
+# # 200025 "자동차수리·세차"
+# # 300016 "주방·가정용품"   
+# # 100010 "커피·음료"       
+# # 300003 "컴퓨터·주변기기" 
+# # 300017 "통신판매업"      
+# # 300008 "패션용품"         
+# # 100009 "호프·간이주점"   
+# # 300028 "화초·애완"  
+# 
+# is.na.svc.nm <- svc_c2$SVC_INDUTY_CD_NM[is.na(svc_c2$SVC_INDUTY_CD.x)]
+# is.na.svc.cd <- c(300031, 300006, 200028, 300020, 200031, 200034, 300010, 200003, 200021,
+#                  300011, 300018, 200025, 300016, 100010, 300003, 300017, 300008, 100009,
+#                  300028)
+# 
+# for(i in 1:19){
+#   svc_c2$svc_cd[svc_c2$SVC_INDUTY_CD_NM==is.na.svc.nm[i]] <- is.na.svc.cd[i]
+# }
+# 
+# svc_c2
+# svc_match <- svc_c2[, c('SVC_INDUTY_CD_NM', 'svc_cd')]
+# svc_match1 <- unique(svc_match)
+# 
+# # translate industry names to English terms
+# library(translateR)
+# google_api <- "AIzaSyBPjgQTMj1YYdd8mdyxSKSzLXFC2OMgcv4"
+# svc_match2 <- translate(dataset = svc_match1, 
+#                         content.field =  'SVC_INDUTY_CD_NM',
+#                         google.api.key = google_api,
+#                         source.lang = 'ko',target.lang = 'en')
+# colnames(svc_match2) <- c("SVC_INDUTY_CD_NM", "SVC_CD", "SVC_EN")
+# svc_match2$SVC_EN[svc_match2$SVC_INDUTY_CD_NM=="변호사사무소"] <- "Lawyer Office"
+# rownames(svc_match2) <- NULL
+# svc_match2$SVC_EN <- stringr::str_to_title(svc_match2$SVC_EN)
+# svc_match2 <- svc_match2[order(svc_match2$SVC_CD),]
+# svc_match3 <- svc_match2
+# 
+# 
+# for(svc in unique(svc_match3$SVC_CD)){
+#   print(svc)
+#   svc_en <- svc_match3$SVC_EN[svc_match3$SVC_CD==svc][1]
+#   print(svc_en)
+#   svc_match3$SVC_EN[svc_match3$SVC_CD==svc] = svc_en
+# }
+# svc_match3
+# save(svc_match3, file="svc_match3.Rdata")
+# 
+# # df$SVC_INDUTY_CD_NM
+# df1 <- merge(df, svc_match3, by=c('SVC_INDUTY_CD_NM'), all.x = TRUE)
+# remove(temp)
+# rm(df)
+# save(df1, file="df1.Rdata")
+# 
+# 
+# # get information of svc
+# library(dplyr)
+# # duplicated columns names: `TRDAR_SE_CD`, `TRDAR_SE_CD_NM`, `TRDAR_CD_NM`
+# which(colnames(df1) %in% "TRDAR_SE_CD" )
+# sum(is.na(df1[,5]))
+# sum(is.na(df1[,658]))
+# df1[, 658] <- NULL
+# 
+# which(colnames(df1) %in% "TRDAR_SE_CD_NM" ) # [6, 658]
+# sum(is.na(df1[,6]))
+# sum(is.na(df1[,658]))
+# df1[, 658] <- NULL
+# 
+# which(colnames(df1) %in% "TRDAR_CD_NM" ) # [7, 658]
+# sum(is.na(df1[,7]))
+# sum(is.na(df1[,658]))
+# df1[, 658] <- NULL
+# 
+# svc.2015.table <- df1[which(df1$STDR_YY_CD==2015),] %>% 
+#                   group_by(STDR_YY_CD, STDR_QU_CD, SVC_CD, SVC_EN) %>% 
+#                   summarise(Obs=n())
+
+# save(svc.2015.table, file="svc_2015_table.Rdata")
+load(file="svc_2015_table.Rdata")
+svc.2015.table
+```
+
+```{r}
+
+# svc.2019.table <- df1 %>% filter(STDR_YY_CD==2019)  %>% group_by(STDR_YY_CD, STDR_QU_CD, SVC_CD, SVC_EN) %>% summarise(Obs.=n())
+# 
+# save(svc.2019.table, file="svc_2019_table.Rdata")
+load(file="svc_2019_table.Rdata")
+svc.2019.table
+
+
+```
+
+
+
+### Number of Stores(점포수)
+Key Variables 
+- *STOR_CO*: Number of Stores that are not under any franchisors
+- *FRC_STOR_CO* : Number of Stores that are under any franchisors
+- Total Number of Storess = *STOR_CO* + *FRC_STOR_CO*
+
+
+| Variable Name         | Description                   |
+|-----------------------|-------------------------------|
+| STOR_CO               | Number of Stores              |
+| SIMILR_INDUTY_STOR_CO | Number of Similar Industries  |
+| FRC_STOR_CO           | Franchise stores can          |
+| CLSBIZ_RT             | Closure rate                  |
+| CLSBIZ_STOR_CO        | Number of stores closed       |
+| OPBIZ_RT              | Opening rate                  |
+| OPBIZ_STOR_CO         | Number of stores newly opened |
+
+```{r}
+# rownames(svc_match3) <- NULL
+# 
+# df1.2018.food <- df1[which(df1$SVC_CD<200001 & df1$STDR_YY_CD>2017),] %>% 
+#   group_by(STDR_YY_CD,STDR_QU_CD, SVC_CD, SVC_EN)  %>%
+#   summarize(Mean=mean(STOR_CO), Std=sd(STOR_CO), Min=min(STOR_CO), Max=max(STOR_CO))
+# 
+# df1.2018.food
+# df1.2018.food$SVC_CD <- as.factor(df1.2018.food$SVC_CD)
+# 
+# library(ggplot2)
+# save(df1.2018.food, file="df1_2018_food.Rdata")
+load(file="df1_2018_food.Rdata")
+
+df1.2018.food %>%
+  ggplot(aes(y=Mean, x=interaction(STDR_QU_CD, STDR_YY_CD), group=SVC_EN)) +
+  geom_line(aes(color=SVC_EN)) +
+  geom_point(aes(color=SVC_EN)) + 
+  xlab("Year-Quarter") + ylab("Avg. No. of Stores") +
+  labs(color= "Types of Restaurants")
+```
+
+### Sales Per Business Type (SVC_CD)
+Key Variables 
+
+
+| Variable Name             | Description                                        |
+|---------------------------|----------------------------------------------------|
+| THSMON_SELNG_AMT          | Month sales amount                                 |
+| THSMON_SELNG_CO           | The number of sales this month                     |
+| MDWK_SELNG_RATE           | Week sales ratio                                   |
+| WKEND_SELNG_RATE          | Sales ratio Weekend                                |
+| MON_SELNG_RATE            | Monday-sales ratio                                 |
+| TUES_SELNG_RATE           | Tuesday-sales ratio                                |
+| WED_SELNG_RATE            | Wednesday sales ratio                              |
+| THUR_SELNG_RATE           | Thursday sales ratio                               |
+| FRI_SELNG_RATE            | Friday sales ratio                                 |
+| SAT_SELNG_RATE            | Saturday sales ratio                               |
+| SUN_SELNG_RATE            | Sunday sales ratio                                 |
+| TMZON_00_06_SELNG_RATE    | 00-06 times sales ratio                            |
+| TMZON_06_11_SELNG_RATE    | 06-11 times sales ratio                            |
+| TMZON_11_14_SELNG_RATE    | Time 11-14 sales ratio                             |
+| TMZON_14_17_SELNG_RATE    | Time 14-17 sales ratio                             |
+| TMZON_17_21_SELNG_RATE    | 17-21 times sales ratio                            |
+| TMZON_21_24_SELNG_RATE    | Time 21-24 sales ratio                             |
+| ML_SELNG_RATE             | Men sales ratio                                    |
+| FML_SELNG_RATE            | Female sales ratio                                 |
+| AGRDE_10_SELNG_RATE       | Ages 10 turnover rate                              |
+| AGRDE_20_SELNG_RATE       | Ages 20 turnover rate                              |
+| AGRDE_30_SELNG_RATE       | Ages 30 turnover rate                              |
+| AGRDE_40_SELNG_RATE       | Ages 40 turnover rate                              |
+| AGRDE_50_SELNG_RATE       | Ages 50 turnover rate                              |
+| AGRDE_60_ABOVE_SELNG_RATE | Ages 60 over sales ratio                           |
+| MDWK_SELNG_AMT            | Week sales amount                                  |
+| WKEND_SELNG_AMT           | Weekend sales amount                               |
+| MON_SELNG_AMT             | Monday Sales Amount                                |
+| TUES_SELNG_AMT            | Tuesday sales amount                               |
+| WED_SELNG_AMT             | Wednesday sales amount                             |
+| THUR_SELNG_AMT            | Thursday sales amount                              |
+| FRI_SELNG_AMT             | Friday Sales Amount                                |
+| SAT_SELNG_AMT             | Saturday sales amount                              |
+| SUN_SELNG_AMT             | Sunday sales amount                                |
+| TMZON_00_06_SELNG_AMT     | Time 00-06 sale amount                             |
+| TMZON_06_11_SELNG_AMT     | Time 06-11 sale amount                             |
+| TMZON_11_14_SELNG_AMT     | Time 11-14 sale amount                             |
+| TMZON_14_17_SELNG_AMT     | Time 14-17 sale amount                             |
+| TMZON_17_21_SELNG_AMT     | Time 17-21 sale amount                             |
+| TMZON_21_24_SELNG_AMT     | Time 21-24 sale amount                             |
+| ML_SELNG_AMT              | Men sales amount                                   |
+| FML_SELNG_AMT             | Female sales amount                                |
+| AGRDE_10_SELNG_AMT        | Ages 10 sales amount                               |
+| AGRDE_20_SELNG_AMT        | Ages 20 sales amount                               |
+| AGRDE_30_SELNG_AMT        | Ages 30 sales amount                               |
+| AGRDE_40_SELNG_AMT        | Ages 40 sales amount                               |
+| AGRDE_50_SELNG_AMT        | Ages 50 sales amount                               |
+| AGRDE_60_ABOVE_SELNG_AMT  | Aged 60 or more sales price                        |
+| MDWK_SELNG_CO             | Week sales number                                  |
+| WKEND_SELNG_CO            | Weekend sales number                               |
+| MON_SELNG_CO              | Monday sales number                                |
+| TUES_SELNG_CO             | Tuesday sales number                               |
+| WED_SELNG_CO              | Wednesday sales number                             |
+| THUR_SELNG_CO             | Thursday sales number                              |
+| FRI_SELNG_CO              | Friday sales number                                |
+| SAT_SELNG_CO              | Saturday sales number                              |
+| SUN_SELNG_CO              | Sunday sales number                                |
+| TMZON_00_06_SELNG_CO      | The number of time zones to 06 the number of sales |
+| TMZON_06_11_SELNG_CO      | The number of time zones to 11 the number of sales |
+| TMZON_11_14_SELNG_CO      | The number of time zones to 14 the number of sales |
+| TMZON_14_17_SELNG_CO      | The number of time zones to 17 the number of sales |
+| TMZON_17_21_SELNG_CO      | The number of time zones to 21 the number of sales |
+| TMZON_21_24_SELNG_CO      | The number of time zones to 24 the number of sales |
+| ML_SELNG_CO               | The number of male sales                           |
+| FML_SELNG_CO              | Female sales number                                |
+| AGRDE_10_SELNG_CO         | Ages 10 sales number                               |
+| AGRDE_20_SELNG_CO         | Ages 20 sales number                               |
+| AGRDE_30_SELNG_CO         | Ages 30 sales number                               |
+| AGRDE_40_SELNG_CO         | Ages 40 sales number                               |
+| AGRDE_50_SELNG_CO         | Ages 50 sales number                               |
+| AGRDE_60_ABOVE_SELNG_CO   | The number of sales over age 60                    |
+
+
+```{r}
+# df1.2018.food.sales <- df1[which(df1$SVC_CD<200001 & df1$STDR_YY_CD>2017 & !is.na(df1$THSMON_SELNG_AMT)),] %>% 
+#   group_by(STDR_YY_CD,STDR_QU_CD, SVC_CD, SVC_EN)  %>%
+#   summarize(Mean=mean(THSMON_SELNG_AMT), Std=sd(THSMON_SELNG_AMT),
+#             Min=min(THSMON_SELNG_AMT), Max=max(THSMON_SELNG_AMT))
+# save(df1.2018.food.sales, file="df1_2018_food_sales.Rdata")
+# choosing values from color palette
+# library(RColorBrewer)
+# library(wesanderson)
+# 
+# nb.cols <- 20
+# mycolors <- colorRampPalette(brewer.pal(8,"Dark2"))(nb.cols) # a
+# mycolors2 <- wes_palette(name="Moonrise2")
+# 
+# save(mycolors, mycolors2, file="mycolor.Rdata")
+
+load(file="mycolor.Rdata")
+load(file="df1_2018_food_sales.Rdata")
+df1.2018.food.sales %>%
+  ggplot(aes(y=Mean, x=interaction(STDR_QU_CD, STDR_YY_CD), group=SVC_EN)) +
+  geom_line(aes(color=SVC_EN)) +
+  geom_point(aes(color=SVC_EN)) + 
+  xlab("Year-Quarter") + ylab("Avg. Sales (Won, Aggregate)") +
+  ggtitle("Changes in No. of Sales from 2018 to 2020") +
+  labs(color= "Types of Restaurants") + 
+  scale_color_manual(values=mycolors) 
+
+  
+df1.2018.food.sales <- df1.2018.food.sales[order(df1.2018.food.sales$STDR_YY_CD, df1.2018.food.sales$STDR_QU_CD),]
+
+df1.2018.food.sales$time <- paste0(df1.2018.food.sales$STDR_YY_CD, ".Q" , df1.2018.food.sales$STDR_QU_CD)
+
+# mycolor2 
+df1.2018.food.sales[which(df1.2018.food.sales$STDR_QU_CD==1),] %>%
+  ggplot(aes(y=Mean, x=time, fill=time)) + 
+  geom_bar(position="dodge", stat="identity", colour="black") +
+  facet_wrap(~SVC_EN) + 
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.text = element_text(size = 8)) +
+  ylab("Average Sales (Aggregate, Won)") + 
+  xlab("Time (Q1s from 2018 to 2020)") + 
+  ggtitle("Changes in No. of Sales: Q1s from 2018 to 2020") +
+  scale_fill_manual(name = "Time", labels = c("2018 Q1", "2019 Q1", "2020 Q1"),
+                    values=mycolors2) + 
+  scale_x_discrete(labels=c("2018.Q1" = "18Q1", "2019.Q1" = "19Q1", "2020.Q1"="20Q1"))
+
+```
+
+
+```{r}
+# df1.2018.food.count <- df1[which(df1$SVC_CD<200001 & df1$STDR_YY_CD>2017 & !is.na(df1$THSMON_SELNG_CO)),] %>% 
+#   group_by(STDR_YY_CD,STDR_QU_CD, SVC_CD, SVC_EN)  %>%
+#   summarize(Mean=mean(THSMON_SELNG_CO), Std=sd(THSMON_SELNG_CO),
+#             Min=min(THSMON_SELNG_CO), Max=max(THSMON_SELNG_CO))
+# save(df1.2018.food.count, file="df1.2018.food.count.Rdata")
+load(file="df1.2018.food.count.Rdata")
+
+df1.2018.food.count %>%
+  ggplot(aes(y=Mean, x=interaction(STDR_QU_CD, STDR_YY_CD), group=SVC_EN)) +
+  geom_line(aes(color=SVC_EN)) +
+  geom_point(aes(color=SVC_EN)) + 
+  xlab("Year-Quarter") + ylab("Avg. Sales (Won, Aggregate)") +
+  ggtitle("Changes in No. of Checks from 2018Q1 to 2020Q1") +
+  labs(color= "Types of Restaurants") + 
+  scale_color_manual(values=mycolors)
+
+df1.2018.food.count$time <- paste0(df1.2018.food.count$STDR_YY_CD, ".Q" , df1.2018.food.count$STDR_QU_CD)
+
+  
+df1.2018.food.count[which(df1.2018.food.count$STDR_QU_CD==1),] %>%
+  ggplot(aes(y=Mean, x=time, fill=time)) + 
+  geom_bar(position="dodge", stat="identity", color="black") +
+  facet_wrap(~SVC_EN) + 
+  theme_bw() +
+  theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.text = element_text(size = 8)) +
+  ylab("Average Sales (Aggregate, Won)") + 
+  xlab("Time (Q1s from 2018 to 2020)")+
+  ggtitle("Changes in No. of Checks: Q1s from 2018 to 2020") +
+  scale_fill_manual(name = "Time", labels = c("2018 Q1", "2019 Q1", "2020 Q1"),
+                    values=mycolors2) +
+                    # values=c("#d8b365", "#f5f5f5", "#5ab4ac")) +
+  scale_x_discrete(labels=c("2018.Q1" = "18Q1", "2019.Q1" = "19Q1", "2020.Q1"="20Q1"))
+```
+
+### Foot Traffic (Floating Population) 
+```{r}
+# library(readr)
+# traffic_df <- read_csv("traffic_df.csv")
+# traffic.col.nm <-colnames(traffic_df)[7:(length(colnames(traffic_df))-1)]
+# 
+# 
+# fpop.2018 <- with(traffic_df[which(traffic_df$STDR_YY_CD>2017),], 
+#      aggregate(TOT_FLPOP_CO, list(STDR_YY_CD, STDR_QU_CD, TRDAR_SE_CD), mean)
+# )
+# save(fpop.2018, file="fpop.2018.Rdata")
+load(file="fpop.2018.Rdata")
+
+colnames(fpop.2018) <- c("STDR_YY_CD", "STDR_QU_CD", "TRDAR_SE_CD", "Mean")
+fpop.2018$time <- paste0(fpop.2018$STDR_YY_CD, ".Q", fpop.2018$STDR_QU_CD)
+fpop.2018 <- fpop.2018[order(fpop.2018$STDR_YY_CD,fpop.2018$STDR_QU_CD),]
+
+fpop.2018 %>%
+  ggplot(aes(y=Mean, x = time, group=TRDAR_SE_CD, colour=TRDAR_SE_CD)) +
+  geom_line(aes(colour = TRDAR_SE_CD)) +
+  geom_point(aes(colour = TRDAR_SE_CD)) + 
+  xlab("Time: Year-Quarter") + 
+  ylab("Total Floating Population") + 
+  ggtitle("Changes in Floating Population from 2018 to 2020") +
+  scale_color_manual(values=mycolors, name = "Type of Markets", 
+                     labels=c("Small", "Developed","Old", "Tourist"))
+# add labels
+fpop.2018$TRDAR_SE_CD <- factor(fpop.2018$TRDAR_SE_CD, levels = c("A", "D", "R","U"),
+                                labels=c("Small", "Developed","Old", "Tourist"))
+```
+
+```{r}
+fpop.2018[which(fpop.2018$STDR_QU_CD==1),] %>%
+  ggplot(aes(y=Mean, x=time, fill=time)) + 
+  geom_bar(position="dodge", stat="identity", color="black")+
+  facet_wrap(~TRDAR_SE_CD) + 
+  theme_bw() +
+  theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.text = element_text(size = 10)) +
+  ylab("Average Total Floating Population") + 
+  xlab("Time (Q1s from 2018 to 2020)")+
+  ggtitle("Changes in No. of Checks: Q1s from 2018 to 2020") +
+  scale_fill_manual(name = "Time", labels = c("2018 Q1", "2019 Q1", "2020 Q1"),
+                    values=mycolors2)
+```
+
+Variables measuring the floating population are defined as below
+
+|          TOT_FLPOP_CO         | 총유동인구수                            | The total population flow                                      |
+|:-----------------------------:|-----------------------------------------|----------------------------------------------------------------|
+|          ML_FLPOP_CO          | 남성유동인구수                          | Men population flow                                            |
+|          FML_FLPOP_CO         | 여성유동인구수                          | Women population flow                                          |
+|       AGRDE_10_FLPOP_CO       | 연령대10유동인구수                      | Floating population age 10                                     |
+|       AGRDE_20_FLPOP_CO       | 연령대20유동인구수                      | Floating population age 20                                     |
+|       AGRDE_30_FLPOP_CO       | 연령대30유동인구수                      | Floating population age 30                                     |
+|       AGRDE_40_FLPOP_CO       | 연령대40유동인구수                      | Floating population age 40                                     |
+|       AGRDE_50_FLPOP_CO       | 연령대50유동인구수                      | Floating population age 50                                     |
+|    AGRDE_60_ABOVE_FLPOP_CO    | 연령대60이상유동인구수                  | Flow population age 60                                         |
+|        TMZON_1_FLPOP_CO       | 시간대1유동인구수                       | One time the population flow                                   |
+|        TMZON_2_FLPOP_CO       | 시간대2유동인구수                       | Time 1 the population flow                                     |
+|        TMZON_3_FLPOP_CO       | 시간대3유동인구수                       | Time 2 the population flow                                     |
+|        TMZON_4_FLPOP_CO       | 시간대4유동인구수                       | Time 3 the population flow                                     |
+|        TMZON_5_FLPOP_CO       | 시간대5유동인구수                       | Time 4 the population flow                                     |
+|        TMZON_6_FLPOP_CO       | 시간대6유동인구수                       | Six times the population flow                                  |
+|          MON_FLPOP_CO         | 월요일유동인구수                        | Monday floating population                                     |
+|         TUES_FLPOP_CO         | 화요일유동인구수                        | Tuesday floating population                                    |
+|          WED_FLPOP_CO         | 수요일유동인구수                        | Wednesday floating population                                  |
+|         THUR_FLPOP_CO         | 목요일유동인구수                        | Thursday floating population                                   |
+|          FRI_FLPOP_CO         | 금요일유동인구수                        | Friday floating population                                     |
+|          SAT_FLPOP_CO         | 토요일유동인구수                        | Saturday floating population                                   |
+|          SUN_FLPOP_CO         | 일요일유동인구수                        | Sunday floating population                                     |
+|    MAG_10_MONTM_1_FLPOP_CO    | 남성연령대10월요일시간대1유동인구수     | Men ages 10 Monday one time the population flow                |
+|    MAG_10_MONTM_2_FLPOP_CO    | 남성연령대10월요일시간대2유동인구수     | Men ages 10 Monday 2 times the population flow                 |
+|    MAG_10_MONTM_3_FLPOP_CO    | 남성연령대10월요일시간대3유동인구수     | Men ages 10 Monday three times the population flow             |
+|    MAG_10_MONTM_4_FLPOP_CO    | 남성연령대10월요일시간대4유동인구수     | Men ages 10 Monday 4 times the population flow                 |
+|    MAG_10_MONTM_5_FLPOP_CO    | 남성연령대10월요일시간대5유동인구수     | Men ages 10 Monday 5 times the population flow                 |
+|    MAG_10_MONTM_6_FLPOP_CO    | 남성연령대10월요일시간대6유동인구수     | Men ages 10 Monday 6 times the population flow                 |
+|    MAG_10_TUETM_1_FLPOP_CO    | 남성연령대10화요일시간대1유동인구수     | Men ages 10 Tuesday one time the population flow               |
+|    MAG_10_TUETM_2_FLPOP_CO    | 남성연령대10화요일시간대2유동인구수     | Men ages 10 Tuesday 2 times the population flow                |
+|    MAG_10_TUETM_3_FLPOP_CO    | 남성연령대10화요일시간대3유동인구수     | Men ages 10 Tuesday 3 times the population flow                |
+|    MAG_10_TUETM_4_FLPOP_CO    | 남성연령대10화요일시간대4유동인구수     | Men ages 10 Tuesday 4 times the population flow                |
+|    MAG_10_TUETM_5_FLPOP_CO    | 남성연령대10화요일시간대5유동인구수     | Men ages 10 Tuesday 5 times the population flow                |
+|    MAG_10_TUETM_6_FLPOP_CO    | 남성연령대10화요일시간대6유동인구수     | Men ages 10 Tuesday 6 times the population flow                |
+|    MAG_10_WEDTM_1_FLPOP_CO    | 남성연령대10수요일시간대1유동인구수     | Men ages 10 Wednesday one time the population flow             |
+|    MAG_10_WEDTM_2_FLPOP_CO    | 남성연령대10수요일시간대2유동인구수     | Men ages 10 Wednesday 2 times the population flow              |
+|    MAG_10_WEDTM_3_FLPOP_CO    | 남성연령대10수요일시간대3유동인구수     | Men ages 10 Wednesday three times the population flow          |
+|    MAG_10_WEDTM_4_FLPOP_CO    | 남성연령대10수요일시간대4유동인구수     | Men ages 10 Wednesday 4 times the population flow              |
+|    MAG_10_WEDTM_5_FLPOP_CO    | 남성연령대10수요일시간대5유동인구수     | Men ages 10 Wednesday 5 times the population flow              |
+|    MAG_10_WEDTM_6_FLPOP_CO    | 남성연령대10수요일시간대6유동인구수     | Men ages 10 Wednesday 6 times the population flow              |
+|    MAG_10_THUTM_1_FLPOP_CO    | 남성연령대10목요일시간대1유동인구수     | Men ages 10 Thursday zone 1 flow population                    |
+|    MAG_10_THUTM_2_FLPOP_CO    | 남성연령대10목요일시간대2유동인구수     | Men ages 10 Thursday 2 times the population flow               |
+|    MAG_10_THUTM_3_FLPOP_CO    | 남성연령대10목요일시간대3유동인구수     | Men ages 10 Thursday three times the population flow           |
+|    MAG_10_THUTM_4_FLPOP_CO    | 남성연령대10목요일시간대4유동인구수     | Men ages 10 Thursday 4 times the population flow               |
+|    MAG_10_THUTM_5_FLPOP_CO    | 남성연령대10목요일시간대5유동인구수     | Men ages 10 Thursday 5 times the population flow               |
+|    MAG_10_THUTM_6_FLPOP_CO    | 남성연령대10목요일시간대6유동인구수     | Men ages 10 Thursday 6 times the population flow               |
+|    MAG_10_FRITM_1_FLPOP_CO    | 남성연령대10금요일시간대1유동인구수     | Men ages 10 Friday one time the population flow                |
+|    MAG_10_FRITM_2_FLPOP_CO    | 남성연령대10금요일시간대2유동인구수     | Men ages 10 Friday 2 times the population flow                 |
+|    MAG_10_FRITM_3_FLPOP_CO    | 남성연령대10금요일시간대3유동인구수     | Men ages 10 Friday three times the population flow             |
+|    MAG_10_FRITM_4_FLPOP_CO    | 남성연령대10금요일시간대4유동인구수     | Men ages 10 Friday 4 times the population flow                 |
+|    MAG_10_FRITM_5_FLPOP_CO    | 남성연령대10금요일시간대5유동인구수     | Men ages 10 Friday 5 times the population flow                 |
+|    MAG_10_FRITM_6_FLPOP_CO    | 남성연령대10금요일시간대6유동인구수     | Men ages 10 Friday 6 times the population flow                 |
+|    MAG_10_SATTM_1_FLPOP_CO    | 남성연령대10토요일시간대1유동인구수     | Men ages 10 Saturday one time the population flow              |
+|    MAG_10_SATTM_2_FLPOP_CO    | 남성연령대10토요일시간대2유동인구수     | Men ages 10 Saturday 2 times the population flow               |
+|    MAG_10_SATTM_3_FLPOP_CO    | 남성연령대10토요일시간대3유동인구수     | Men ages 10 Saturday 3 times the population flow               |
+|    MAG_10_SATTM_4_FLPOP_CO    | 남성연령대10토요일시간대4유동인구수     | Men ages 10 Saturday 4 times the population flow               |
+|    MAG_10_SATTM_5_FLPOP_CO    | 남성연령대10토요일시간대5유동인구수     | Men ages 10 Saturday 5 times the population flow               |
+|    MAG_10_SATTM_6_FLPOP_CO    | 남성연령대10토요일시간대6유동인구수     | Men ages 10 Saturday 6 times the population flow               |
+|    MAG_10_SUNTM_1_FLPOP_CO    | 남성연령대10일요일시간대1유동인구수     | Men ages 10 Sunday one time the population flow                |
+|    MAG_10_SUNTM_2_FLPOP_CO    | 남성연령대10일요일시간대2유동인구수     | Men ages 10 Sunday two times the population flow               |
+|    MAG_10_SUNTM_3_FLPOP_CO    | 남성연령대10일요일시간대3유동인구수     | Men ages 10 Sunday three times the population flow             |
+|    MAG_10_SUNTM_4_FLPOP_CO    | 남성연령대10일요일시간대4유동인구수     | Men ages 10 Sunday 4 times the population flow                 |
+|    MAG_10_SUNTM_5_FLPOP_CO    | 남성연령대10일요일시간대5유동인구수     | Men ages 10 Sunday 5 times the population flow                 |
+|    MAG_10_SUNTM_6_FLPOP_CO    | 남성연령대10일요일시간대6유동인구수     | Men ages 10 Sunday 6 times the population flow                 |
+|    MAG_20_MONTM_1_FLPOP_CO    | 남성연령대20월요일시간대1유동인구수     | Men ages 20 Monday one time the population flow                |
+|    MAG_20_MONTM_2_FLPOP_CO    | 남성연령대20월요일시간대2유동인구수     | Men ages 20 Monday 2 times the population flow                 |
+|    MAG_20_MONTM_3_FLPOP_CO    | 남성연령대20월요일시간대3유동인구수     | Men ages 20 Monday three times the population flow             |
+|    MAG_20_MONTM_4_FLPOP_CO    | 남성연령대20월요일시간대4유동인구수     | Men ages 20 Monday 4 times the population flow                 |
+|    MAG_20_MONTM_5_FLPOP_CO    | 남성연령대20월요일시간대5유동인구수     | Men ages 20 Monday 5 times the population flow                 |
+|    MAG_20_MONTM_6_FLPOP_CO    | 남성연령대20월요일시간대6유동인구수     | Men ages 20 Monday 6 times the population flow                 |
+|    MAG_20_TUETM_1_FLPOP_CO    | 남성연령대20화요일시간대1유동인구수     | Men ages 20 Tuesday one time the population flow               |
+|    MAG_20_TUETM_2_FLPOP_CO    | 남성연령대20화요일시간대2유동인구수     | Men ages 20 Tuesday 2 times the population flow                |
+|    MAG_20_TUETM_3_FLPOP_CO    | 남성연령대20화요일시간대3유동인구수     | Men ages 20 Tuesday 3 times the population flow                |
+|    MAG_20_TUETM_4_FLPOP_CO    | 남성연령대20화요일시간대4유동인구수     | Men ages 20 Tuesday 4 times the population flow                |
+|    MAG_20_TUETM_5_FLPOP_CO    | 남성연령대20화요일시간대5유동인구수     | Men ages 20 Tuesday 5 times the population flow                |
+|    MAG_20_TUETM_6_FLPOP_CO    | 남성연령대20화요일시간대6유동인구수     | Men ages 20 Tuesday 6 times the population flow                |
+|    MAG_20_WEDTM_1_FLPOP_CO    | 남성연령대20수요일시간대1유동인구수     | Men ages 20 Wednesday one time the population flow             |
+|    MAG_20_WEDTM_2_FLPOP_CO    | 남성연령대20수요일시간대2유동인구수     | Men ages 20 Wednesday 2 times the population flow              |
+|    MAG_20_WEDTM_3_FLPOP_CO    | 남성연령대20수요일시간대3유동인구수     | Men ages 20 Wednesday three times the population flow          |
+|    MAG_20_WEDTM_4_FLPOP_CO    | 남성연령대20수요일시간대4유동인구수     | Men ages 20 Wednesday 4 times the population flow              |
+|    MAG_20_WEDTM_5_FLPOP_CO    | 남성연령대20수요일시간대5유동인구수     | Men ages 20 Wednesday 5 times the population flow              |
+|    MAG_20_WEDTM_6_FLPOP_CO    | 남성연령대20수요일시간대6유동인구수     | Men ages 20 Wednesday 6 times the population flow              |
+|    MAG_20_THUTM_1_FLPOP_CO    | 남성연령대20목요일시간대1유동인구수     | Men ages 20 Thursday zone 1 flow population                    |
+|    MAG_20_THUTM_2_FLPOP_CO    | 남성연령대20목요일시간대2유동인구수     | Men ages 20 Thursday 2 times the population flow               |
+|    MAG_20_THUTM_3_FLPOP_CO    | 남성연령대20목요일시간대3유동인구수     | Men ages 20 Thursday three times the population flow           |
+|    MAG_20_THUTM_4_FLPOP_CO    | 남성연령대20목요일시간대4유동인구수     | Men ages 20 Thursday 4 times the population flow               |
+|    MAG_20_THUTM_5_FLPOP_CO    | 남성연령대20목요일시간대5유동인구수     | Men ages 20 Thursday 5 times the population flow               |
+|    MAG_20_THUTM_6_FLPOP_CO    | 남성연령대20목요일시간대6유동인구수     | Men ages 20 Thursday 6 times the population flow               |
+|    MAG_20_FRITM_1_FLPOP_CO    | 남성연령대20금요일시간대1유동인구수     | Men ages 20 Friday one time the population flow                |
+|    MAG_20_FRITM_2_FLPOP_CO    | 남성연령대20금요일시간대2유동인구수     | Men ages 20 Friday 2 times the population flow                 |
+|    MAG_20_FRITM_3_FLPOP_CO    | 남성연령대20금요일시간대3유동인구수     | Men ages 20 Friday three times the population flow             |
+|    MAG_20_FRITM_4_FLPOP_CO    | 남성연령대20금요일시간대4유동인구수     | Men ages 20 Friday 4 times the population flow                 |
+|    MAG_20_FRITM_5_FLPOP_CO    | 남성연령대20금요일시간대5유동인구수     | Men ages 20 Friday 5 times the population flow                 |
+|    MAG_20_FRITM_6_FLPOP_CO    | 남성연령대20금요일시간대6유동인구수     | Men ages 20 Friday 6 times the population flow                 |
+|    MAG_20_SATTM_1_FLPOP_CO    | 남성연령대20토요일시간대1유동인구수     | Men ages 20 Saturday one time the population flow              |
+|    MAG_20_SATTM_2_FLPOP_CO    | 남성연령대20토요일시간대2유동인구수     | Men ages 20 Saturday 2 times the population flow               |
+|    MAG_20_SATTM_3_FLPOP_CO    | 남성연령대20토요일시간대3유동인구수     | Men ages 20 Saturday 3 times the population flow               |
+|    MAG_20_SATTM_4_FLPOP_CO    | 남성연령대20토요일시간대4유동인구수     | Men ages 20 Saturday 4 times the population flow               |
+|    MAG_20_SATTM_5_FLPOP_CO    | 남성연령대20토요일시간대5유동인구수     | Men ages 20 Saturday 5 times the population flow               |
+|    MAG_20_SATTM_6_FLPOP_CO    | 남성연령대20토요일시간대6유동인구수     | Men ages 20 Saturday 6 times the population flow               |
+|    MAG_20_SUNTM_1_FLPOP_CO    | 남성연령대20일요일시간대1유동인구수     | Men ages 20 Sunday one time the population flow                |
+|    MAG_20_SUNTM_2_FLPOP_CO    | 남성연령대20일요일시간대2유동인구수     | Men ages 20 Sunday two times the population flow               |
+|    MAG_20_SUNTM_3_FLPOP_CO    | 남성연령대20일요일시간대3유동인구수     | Men ages 20 Sunday three times the population flow             |
+|    MAG_20_SUNTM_4_FLPOP_CO    | 남성연령대20일요일시간대4유동인구수     | Men ages 20 Sunday 4 times the population flow                 |
+|    MAG_20_SUNTM_5_FLPOP_CO    | 남성연령대20일요일시간대5유동인구수     | Men ages 20 Sunday 5 times the population flow                 |
+|    MAG_20_SUNTM_6_FLPOP_CO    | 남성연령대20일요일시간대6유동인구수     | Men ages 20 Sunday 6 times the population flow                 |
+|    MAG_30_MONTM_1_FLPOP_CO    | 남성연령대30월요일시간대1유동인구수     | Men ages 30 Monday one time the population flow                |
+|    MAG_30_MONTM_2_FLPOP_CO    | 남성연령대30월요일시간대2유동인구수     | Men ages 30 Monday 2 times the population flow                 |
+|    MAG_30_MONTM_3_FLPOP_CO    | 남성연령대30월요일시간대3유동인구수     | Men ages 30 Monday three times the population flow             |
+|    MAG_30_MONTM_4_FLPOP_CO    | 남성연령대30월요일시간대4유동인구수     | Men ages 30 Monday 4 times the population flow                 |
+|    MAG_30_MONTM_5_FLPOP_CO    | 남성연령대30월요일시간대5유동인구수     | Men ages 30 Monday 5 times the population flow                 |
+|    MAG_30_MONTM_6_FLPOP_CO    | 남성연령대30월요일시간대6유동인구수     | Men ages 30 Monday 6 times the population flow                 |
+|    MAG_30_TUETM_1_FLPOP_CO    | 남성연령대30화요일시간대1유동인구수     | Men ages 30 Tuesday one time the population flow               |
+|    MAG_30_TUETM_2_FLPOP_CO    | 남성연령대30화요일시간대2유동인구수     | Men ages 30 Tuesday 2 times the population flow                |
+|    MAG_30_TUETM_3_FLPOP_CO    | 남성연령대30화요일시간대3유동인구수     | Men ages 30 Tuesday 3 times the population flow                |
+|    MAG_30_TUETM_4_FLPOP_CO    | 남성연령대30화요일시간대4유동인구수     | Men ages 30 Tuesday 4 times the population flow                |
+|    MAG_30_TUETM_5_FLPOP_CO    | 남성연령대30화요일시간대5유동인구수     | Men ages 30 Tuesday 5 times the population flow                |
+|    MAG_30_TUETM_6_FLPOP_CO    | 남성연령대30화요일시간대6유동인구수     | Men ages 30 Tuesday 6 times the population flow                |
+|    MAG_30_WEDTM_1_FLPOP_CO    | 남성연령대30수요일시간대1유동인구수     | Men ages 30 Wednesday one time the population flow             |
+|    MAG_30_WEDTM_2_FLPOP_CO    | 남성연령대30수요일시간대2유동인구수     | Men ages 30 Wednesday 2 times the population flow              |
+|    MAG_30_WEDTM_3_FLPOP_CO    | 남성연령대30수요일시간대3유동인구수     | Men ages 30 Wednesday three times the population flow          |
+|    MAG_30_WEDTM_4_FLPOP_CO    | 남성연령대30수요일시간대4유동인구수     | Men ages 30 Wednesday 4 times the population flow              |
+|    MAG_30_WEDTM_5_FLPOP_CO    | 남성연령대30수요일시간대5유동인구수     | Men ages 30 Wednesday 5 times the population flow              |
+|    MAG_30_WEDTM_6_FLPOP_CO    | 남성연령대30수요일시간대6유동인구수     | Men ages 30 Wednesday 6 times the population flow              |
+|    MAG_30_THUTM_1_FLPOP_CO    | 남성연령대30목요일시간대1유동인구수     | Men ages 30 Thursday zone 1 flow population                    |
+|    MAG_30_THUTM_2_FLPOP_CO    | 남성연령대30목요일시간대2유동인구수     | Men ages 30 Thursday 2 times the population flow               |
+|    MAG_30_THUTM_3_FLPOP_CO    | 남성연령대30목요일시간대3유동인구수     | Men ages 30 Thursday three times the population flow           |
+|    MAG_30_THUTM_4_FLPOP_CO    | 남성연령대30목요일시간대4유동인구수     | Men ages 30 Thursday 4 times the population flow               |
+|    MAG_30_THUTM_5_FLPOP_CO    | 남성연령대30목요일시간대5유동인구수     | Men ages 30 Thursday 5 times the population flow               |
+|    MAG_30_THUTM_6_FLPOP_CO    | 남성연령대30목요일시간대6유동인구수     | Thursday Men ages 6 to 30 times the population flow            |
+|    MAG_30_FRITM_1_FLPOP_CO    | 남성연령대30금요일시간대1유동인구수     | Men ages 30 Friday one time the population flow                |
+|    MAG_30_FRITM_2_FLPOP_CO    | 남성연령대30금요일시간대2유동인구수     | Men ages 30 Friday 2 times the population flow                 |
+|    MAG_30_FRITM_3_FLPOP_CO    | 남성연령대30금요일시간대3유동인구수     | Men ages 30 Friday three times the population flow             |
+|    MAG_30_FRITM_4_FLPOP_CO    | 남성연령대30금요일시간대4유동인구수     | Men ages 30 Friday 4 times the population flow                 |
+|    MAG_30_FRITM_5_FLPOP_CO    | 남성연령대30금요일시간대5유동인구수     | Men ages 30 Friday 5 times the population flow                 |
+|    MAG_30_FRITM_6_FLPOP_CO    | 남성연령대30금요일시간대6유동인구수     | Men ages 30 Friday 6 times the population flow                 |
+|    MAG_30_SATTM_1_FLPOP_CO    | 남성연령대30토요일시간대1유동인구수     | Men ages 30 Saturday one time the population flow              |
+|    MAG_30_SATTM_2_FLPOP_CO    | 남성연령대30토요일시간대2유동인구수     | Men ages 2 to 30 Saturday flow zone population                 |
+|    MAG_30_SATTM_3_FLPOP_CO    | 남성연령대30토요일시간대3유동인구수     | Men ages 30 Saturday 3 times the population flow               |
+|    MAG_30_SATTM_4_FLPOP_CO    | 남성연령대30토요일시간대4유동인구수     | Men ages 30 Saturday 4 times the population flow               |
+|    MAG_30_SATTM_5_FLPOP_CO    | 남성연령대30토요일시간대5유동인구수     | Men ages 30 Saturday 5 times the population flow               |
+|    MAG_30_SATTM_6_FLPOP_CO    | 남성연령대30토요일시간대6유동인구수     | Men ages 30 Saturday 6 times the population flow               |
+|    MAG_30_SUNTM_1_FLPOP_CO    | 남성연령대30일요일시간대1유동인구수     | Men ages 30 Sunday one time the population flow                |
+|    MAG_30_SUNTM_2_FLPOP_CO    | 남성연령대30일요일시간대2유동인구수     | Men ages 30 Sunday two times the population flow               |
+|    MAG_30_SUNTM_3_FLPOP_CO    | 남성연령대30일요일시간대3유동인구수     | Men ages 30 Sunday three times the population flow             |
+|    MAG_30_SUNTM_4_FLPOP_CO    | 남성연령대30일요일시간대4유동인구수     | Men ages 30 Sunday 4 times the population flow                 |
+|    MAG_30_SUNTM_5_FLPOP_CO    | 남성연령대30일요일시간대5유동인구수     | Men ages 30 Sunday 5 times the population flow                 |
+|    MAG_30_SUNTM_6_FLPOP_CO    | 남성연령대30일요일시간대6유동인구수     | Men ages 30 Sunday 6 times the population flow                 |
+|    MAG_40_MONTM_1_FLPOP_CO    | 남성연령대40월요일시간대1유동인구수     | Men ages 40 Monday one time the population flow                |
+|    MAG_40_MONTM_2_FLPOP_CO    | 남성연령대40월요일시간대2유동인구수     | Men ages 40 Monday 2 times the population flow                 |
+|    MAG_40_MONTM_3_FLPOP_CO    | 남성연령대40월요일시간대3유동인구수     | Men ages 40 Monday three times the population flow             |
+|    MAG_40_MONTM_4_FLPOP_CO    | 남성연령대40월요일시간대4유동인구수     | Men ages 40 Monday 4 times the population flow                 |
+|    MAG_40_MONTM_5_FLPOP_CO    | 남성연령대40월요일시간대5유동인구수     | Men ages 40 Monday 5 times the population flow                 |
+|    MAG_40_MONTM_6_FLPOP_CO    | 남성연령대40월요일시간대6유동인구수     | Men ages 40 Monday 6 times the population flow                 |
+|    MAG_40_TUETM_1_FLPOP_CO    | 남성연령대40화요일시간대1유동인구수     | Men ages 40 Tuesday one time the population flow               |
+|    MAG_40_TUETM_2_FLPOP_CO    | 남성연령대40화요일시간대2유동인구수     | Men ages 40 Tuesday 2 times the population flow                |
+|    MAG_40_TUETM_3_FLPOP_CO    | 남성연령대40화요일시간대3유동인구수     | Men ages 40 Tuesday 3 times the population flow                |
+|    MAG_40_TUETM_4_FLPOP_CO    | 남성연령대40화요일시간대4유동인구수     | Men ages 40 Tuesday 4 times the population flow                |
+|    MAG_40_TUETM_5_FLPOP_CO    | 남성연령대40화요일시간대5유동인구수     | Men ages 40 Tuesday 5 times the population flow                |
+|    MAG_40_TUETM_6_FLPOP_CO    | 남성연령대40화요일시간대6유동인구수     | Men ages 40 Tuesday 6 times the population flow                |
+|    MAG_40_WEDTM_1_FLPOP_CO    | 남성연령대40수요일시간대1유동인구수     | Men ages 40 Wednesday one time the population flow             |
+|    MAG_40_WEDTM_2_FLPOP_CO    | 남성연령대40수요일시간대2유동인구수     | Men ages 40 Wednesday 2 times the population flow              |
+|    MAG_40_WEDTM_3_FLPOP_CO    | 남성연령대40수요일시간대3유동인구수     | Men ages 40 Wednesday three times the population flow          |
+|    MAG_40_WEDTM_4_FLPOP_CO    | 남성연령대40수요일시간대4유동인구수     | Men ages 40 Wednesday 4 times the population flow              |
+|    MAG_40_WEDTM_5_FLPOP_CO    | 남성연령대40수요일시간대5유동인구수     | Men ages 40 Wednesday 5 times the population flow              |
+|    MAG_40_WEDTM_6_FLPOP_CO    | 남성연령대40수요일시간대6유동인구수     | Men ages 40 Wednesday 6 times the population flow              |
+|    MAG_40_THUTM_1_FLPOP_CO    | 남성연령대40목요일시간대1유동인구수     | Men ages 40 Thursday zone 1 flow population                    |
+|    MAG_40_THUTM_2_FLPOP_CO    | 남성연령대40목요일시간대2유동인구수     | Men ages 40 Thursday 2 times the population flow               |
+|    MAG_40_THUTM_3_FLPOP_CO    | 남성연령대40목요일시간대3유동인구수     | Men ages 40 Thursday three times the population flow           |
+|    MAG_40_THUTM_4_FLPOP_CO    | 남성연령대40목요일시간대4유동인구수     | Men ages 40 Thursday 4 times the population flow               |
+|    MAG_40_THUTM_5_FLPOP_CO    | 남성연령대40목요일시간대5유동인구수     | Men ages 40 Thursday 5 times the population flow               |
+|    MAG_40_THUTM_6_FLPOP_CO    | 남성연령대40목요일시간대6유동인구수     | Men ages 40 Thursday 6 times the population flow               |
+|    MAG_40_FRITM_1_FLPOP_CO    | 남성연령대40금요일시간대1유동인구수     | Men ages 40 Friday one time the population flow                |
+|    MAG_40_FRITM_2_FLPOP_CO    | 남성연령대40금요일시간대2유동인구수     | Men ages 40 Friday 2 times the population flow                 |
+|    MAG_40_FRITM_3_FLPOP_CO    | 남성연령대40금요일시간대3유동인구수     | Men ages 40 Friday three times the population flow             |
+|    MAG_40_FRITM_4_FLPOP_CO    | 남성연령대40금요일시간대4유동인구수     | Men ages 40 Friday 4 times the population flow                 |
+|    MAG_40_FRITM_5_FLPOP_CO    | 남성연령대40금요일시간대5유동인구수     | Men ages 40 Friday five times the population flow              |
+|    MAG_40_FRITM_6_FLPOP_CO    | 남성연령대40금요일시간대6유동인구수     | Men ages 40 Friday six times the population flow               |
+|    MAG_40_SATTM_1_FLPOP_CO    | 남성연령대40토요일시간대1유동인구수     | Men ages 40 Saturday one time the population flow              |
+|    MAG_40_SATTM_2_FLPOP_CO    | 남성연령대40토요일시간대2유동인구수     | Men ages 2 to 40 Saturday flow zone population                 |
+|    MAG_40_SATTM_3_FLPOP_CO    | 남성연령대40토요일시간대3유동인구수     | Men ages 40 Saturday 3 times the population flow               |
+|    MAG_40_SATTM_4_FLPOP_CO    | 남성연령대40토요일시간대4유동인구수     | Men ages 40 Saturday 4 times the population flow               |
+|    MAG_40_SATTM_5_FLPOP_CO    | 남성연령대40토요일시간대5유동인구수     | Men ages 40 Saturday 5 times the population flow               |
+|    MAG_40_SATTM_6_FLPOP_CO    | 남성연령대40토요일시간대6유동인구수     | Men ages 40 Saturday 6 times the population flow               |
+|    MAG_40_SUNTM_1_FLPOP_CO    | 남성연령대40일요일시간대1유동인구수     | Men ages 40 Sunday one time the population flow                |
+|    MAG_40_SUNTM_2_FLPOP_CO    | 남성연령대40일요일시간대2유동인구수     | Men ages 40 Sunday two times the population flow               |
+|    MAG_40_SUNTM_3_FLPOP_CO    | 남성연령대40일요일시간대3유동인구수     | Men ages 40 Sunday three times the population flow             |
+|    MAG_40_SUNTM_4_FLPOP_CO    | 남성연령대40일요일시간대4유동인구수     | Men ages 40 Sunday 4 times the population flow                 |
+|    MAG_40_SUNTM_5_FLPOP_CO    | 남성연령대40일요일시간대5유동인구수     | Men ages 40 Sunday 5 times the population flow                 |
+|    MAG_40_SUNTM_6_FLPOP_CO    | 남성연령대40일요일시간대6유동인구수     | Men ages 40 Sunday 6 times the population flow                 |
+|    MAG_50_MONTM_1_FLPOP_CO    | 남성연령대50월요일시간대1유동인구수     | Men ages 50 Monday one time the population flow                |
+|    MAG_50_MONTM_2_FLPOP_CO    | 남성연령대50월요일시간대2유동인구수     | Men ages 50 Monday 2 times the population flow                 |
+|    MAG_50_MONTM_3_FLPOP_CO    | 남성연령대50월요일시간대3유동인구수     | Men ages 50 Monday three times the population flow             |
+|    MAG_50_MONTM_4_FLPOP_CO    | 남성연령대50월요일시간대4유동인구수     | Men ages 50 Monday 4 times the population flow                 |
+|    MAG_50_MONTM_5_FLPOP_CO    | 남성연령대50월요일시간대5유동인구수     | Men ages 50 Monday 5 times the population flow                 |
+|    MAG_50_MONTM_6_FLPOP_CO    | 남성연령대50월요일시간대6유동인구수     | Men ages 50 Monday 6 times the population flow                 |
+|    MAG_50_TUETM_1_FLPOP_CO    | 남성연령대50화요일시간대1유동인구수     | Men ages 50 Tuesday one time the population flow               |
+|    MAG_50_TUETM_2_FLPOP_CO    | 남성연령대50화요일시간대2유동인구수     | Men ages 50 Tuesday 2 times the population flow                |
+|    MAG_50_TUETM_3_FLPOP_CO    | 남성연령대50화요일시간대3유동인구수     | Men ages 50 Tuesday 3 times the population flow                |
+|    MAG_50_TUETM_4_FLPOP_CO    | 남성연령대50화요일시간대4유동인구수     | Men ages 50 Tuesday 4 times the population flow                |
+|    MAG_50_TUETM_5_FLPOP_CO    | 남성연령대50화요일시간대5유동인구수     | Men ages 50 Tuesday 5 times the population flow                |
+|    MAG_50_TUETM_6_FLPOP_CO    | 남성연령대50화요일시간대6유동인구수     | Men ages 50 Tuesday 6 times the population flow                |
+|    MAG_50_WEDTM_1_FLPOP_CO    | 남성연령대50수요일시간대1유동인구수     | Men ages 50 Wednesday one time the population flow             |
+|    MAG_50_WEDTM_2_FLPOP_CO    | 남성연령대50수요일시간대2유동인구수     | Men ages 50 Wednesday 2 times the population flow              |
+|    MAG_50_WEDTM_3_FLPOP_CO    | 남성연령대50수요일시간대3유동인구수     | Men ages 50 Wednesday three times the population flow          |
+|    MAG_50_WEDTM_4_FLPOP_CO    | 남성연령대50수요일시간대4유동인구수     | Men ages 50 Wednesday 4 times the population flow              |
+|    MAG_50_WEDTM_5_FLPOP_CO    | 남성연령대50수요일시간대5유동인구수     | Men ages 50 Wednesday 5 times the population flow              |
+|    MAG_50_WEDTM_6_FLPOP_CO    | 남성연령대50수요일시간대6유동인구수     | Men ages 50 Wednesday 6 times the population flow              |
+|    MAG_50_THUTM_1_FLPOP_CO    | 남성연령대50목요일시간대1유동인구수     | Men ages 50 Thursday zone 1 flow population                    |
+|    MAG_50_THUTM_2_FLPOP_CO    | 남성연령대50목요일시간대2유동인구수     | 50 Thursday zone 2 Men age population flow                     |
+|    MAG_50_THUTM_3_FLPOP_CO    | 남성연령대50목요일시간대3유동인구수     | Men ages 50 Thursday three times the population flow           |
+|    MAG_50_THUTM_4_FLPOP_CO    | 남성연령대50목요일시간대4유동인구수     | Men ages 50 Thursday 4 times the population flow               |
+|    MAG_50_THUTM_5_FLPOP_CO    | 남성연령대50목요일시간대5유동인구수     | 50 Thursday 5 times men ages population flow                   |
+|    MAG_50_THUTM_6_FLPOP_CO    | 남성연령대50목요일시간대6유동인구수     | Men ages 50 Thursday 6 times the population flow               |
+|    MAG_50_FRITM_1_FLPOP_CO    | 남성연령대50금요일시간대1유동인구수     | Men ages 50 Friday one time the population flow                |
+|    MAG_50_FRITM_2_FLPOP_CO    | 남성연령대50금요일시간대2유동인구수     | Men ages 50 Friday 2 times the population flow                 |
+|    MAG_50_FRITM_3_FLPOP_CO    | 남성연령대50금요일시간대3유동인구수     | Men ages 50 Friday three times the population flow             |
+|    MAG_50_FRITM_4_FLPOP_CO    | 남성연령대50금요일시간대4유동인구수     | Men ages 50 Friday 4 times the population flow                 |
+|    MAG_50_FRITM_5_FLPOP_CO    | 남성연령대50금요일시간대5유동인구수     | Men ages 50 Friday five times the population flow              |
+|    MAG_50_FRITM_6_FLPOP_CO    | 남성연령대50금요일시간대6유동인구수     | Men ages 50 Friday six times the population flow               |
+|    MAG_50_SATTM_1_FLPOP_CO    | 남성연령대50토요일시간대1유동인구수     | Men ages 50 Saturday one time the population flow              |
+|    MAG_50_SATTM_2_FLPOP_CO    | 남성연령대50토요일시간대2유동인구수     | Men ages 2 to 50 Saturday flow zone population                 |
+|    MAG_50_SATTM_3_FLPOP_CO    | 남성연령대50토요일시간대3유동인구수     | Men ages 50 Saturday 3 times the population flow               |
+|    MAG_50_SATTM_4_FLPOP_CO    | 남성연령대50토요일시간대4유동인구수     | Men ages 50 Saturday 4 times the population flow               |
+|    MAG_50_SATTM_5_FLPOP_CO    | 남성연령대50토요일시간대5유동인구수     | Men ages 50 Saturday 5 times the population flow               |
+|    MAG_50_SATTM_6_FLPOP_CO    | 남성연령대50토요일시간대6유동인구수     | Men ages 50 Saturday 6 times the population flow               |
+|    MAG_50_SUNTM_1_FLPOP_CO    | 남성연령대50일요일시간대1유동인구수     | Men ages 50 Sunday one time the population flow                |
+|    MAG_50_SUNTM_2_FLPOP_CO    | 남성연령대50일요일시간대2유동인구수     | Men ages 50 Sunday two times the population flow               |
+|    MAG_50_SUNTM_3_FLPOP_CO    | 남성연령대50일요일시간대3유동인구수     | Men ages 50 Sunday three times the population flow             |
+|    MAG_50_SUNTM_4_FLPOP_CO    | 남성연령대50일요일시간대4유동인구수     | Men ages 50 Sunday 4 times the population flow                 |
+|    MAG_50_SUNTM_5_FLPOP_CO    | 남성연령대50일요일시간대5유동인구수     | Men ages 50 Sunday 5 times the population flow                 |
+|    MAG_50_SUNTM_6_FLPOP_CO    | 남성연령대50일요일시간대6유동인구수     | Men ages 50 Sunday 6 times the population flow                 |
+| MAG_60_ABOVE_MONTM_1_FLPOP_CO | 남성연령대60이상월요일시간대1유동인구수 | Men over age 60 population flows first time Monday             |
+| MAG_60_ABOVE_MONTM_2_FLPOP_CO | 남성연령대60이상월요일시간대2유동인구수 | 60 or more times Monday male population ages 2 flow            |
+| MAG_60_ABOVE_MONTM_3_FLPOP_CO | 남성연령대60이상월요일시간대3유동인구수 | 60 or more times Monday male population ages three flow        |
+| MAG_60_ABOVE_MONTM_4_FLPOP_CO | 남성연령대60이상월요일시간대4유동인구수 | 60 or more times Monday male population ages 4 flow            |
+| MAG_60_ABOVE_MONTM_5_FLPOP_CO | 남성연령대60이상월요일시간대5유동인구수 | Men ages 60 Monday more than five times the population flow    |
+| MAG_60_ABOVE_MONTM_6_FLPOP_CO | 남성연령대60이상월요일시간대6유동인구수 | 60 or more times Monday male population ages 6 Flow            |
+| MAG_60_ABOVE_TUETM_1_FLPOP_CO | 남성연령대60이상화요일시간대1유동인구수 | Tuesday more than 60 times male population ages 1, flows       |
+| MAG_60_ABOVE_TUETM_2_FLPOP_CO | 남성연령대60이상화요일시간대2유동인구수 | Men ages 2 Tuesday more than 60 times the population flow      |
+| MAG_60_ABOVE_TUETM_3_FLPOP_CO | 남성연령대60이상화요일시간대3유동인구수 | Men ages 3 Tuesday more than 60 times the population flow      |
+| MAG_60_ABOVE_TUETM_4_FLPOP_CO | 남성연령대60이상화요일시간대4유동인구수 | Tuesday more than 60 times men ages four floating population   |
+| MAG_60_ABOVE_TUETM_5_FLPOP_CO | 남성연령대60이상화요일시간대5유동인구수 | Men ages 60 Tuesday over five times the population flow        |
+| MAG_60_ABOVE_TUETM_6_FLPOP_CO | 남성연령대60이상화요일시간대6유동인구수 | Tuesday more than 60 times male population ages 6 Flow         |
+| MAG_60_ABOVE_WEDTM_1_FLPOP_CO | 남성연령대60이상수요일시간대1유동인구수 | Wednesday more than 60 times male population ages 1, flows     |
+| MAG_60_ABOVE_WEDTM_2_FLPOP_CO | 남성연령대60이상수요일시간대2유동인구수 | Men ages 2 Wednesday more than 60 times the population flow    |
+| MAG_60_ABOVE_WEDTM_3_FLPOP_CO | 남성연령대60이상수요일시간대3유동인구수 | Men ages 60 Wednesday over three times the population flow     |
+| MAG_60_ABOVE_WEDTM_4_FLPOP_CO | 남성연령대60이상수요일시간대4유동인구수 | Wednesday more than 60 times men ages four floating population |
+| MAG_60_ABOVE_WEDTM_5_FLPOP_CO | 남성연령대60이상수요일시간대5유동인구수 | Men ages 60 Wednesday over 5 times the population flow         |
+| MAG_60_ABOVE_WEDTM_6_FLPOP_CO | 남성연령대60이상수요일시간대6유동인구수 | Wednesday at least 60 men ages six times the population flow   |
+| MAG_60_ABOVE_THUTM_1_FLPOP_CO | 남성연령대60이상목요일시간대1유동인구수 | Thursday more than 60 times male population ages 1, flows      |
+| MAG_60_ABOVE_THUTM_2_FLPOP_CO | 남성연령대60이상목요일시간대2유동인구수 | Men ages 60 Thursday least two times the population flow       |
+| MAG_60_ABOVE_THUTM_3_FLPOP_CO | 남성연령대60이상목요일시간대3유동인구수 | Men ages 60 Thursday least three times the population flow     |
+| MAG_60_ABOVE_THUTM_4_FLPOP_CO | 남성연령대60이상목요일시간대4유동인구수 | Thursday more than 60 times men ages four floating population  |
+| MAG_60_ABOVE_THUTM_5_FLPOP_CO | 남성연령대60이상목요일시간대5유동인구수 | Men age 5 Thursday more than 60 times the population flow      |
+| MAG_60_ABOVE_THUTM_6_FLPOP_CO | 남성연령대60이상목요일시간대6유동인구수 | Thursday least 60 men ages six times the population flow       |
+| MAG_60_ABOVE_FRITM_1_FLPOP_CO | 남성연령대60이상금요일시간대1유동인구수 | 60 or more times Friday 1 Men age population flow              |
+| MAG_60_ABOVE_FRITM_2_FLPOP_CO | 남성연령대60이상금요일시간대2유동인구수 | 60 or more times Friday 2 Men age population flow              |
+| MAG_60_ABOVE_FRITM_3_FLPOP_CO | 남성연령대60이상금요일시간대3유동인구수 | Men ages 60 Friday least three times the population flow       |
+| MAG_60_ABOVE_FRITM_4_FLPOP_CO | 남성연령대60이상금요일시간대4유동인구수 | 60 or more times Friday Men population ages 4 flow             |
+| MAG_60_ABOVE_FRITM_5_FLPOP_CO | 남성연령대60이상금요일시간대5유동인구수 | Men ages 60 Friday least five times the population flow        |
+| MAG_60_ABOVE_FRITM_6_FLPOP_CO | 남성연령대60이상금요일시간대6유동인구수 | 60 or more times Friday Men population ages 6 Flow             |
+| MAG_60_ABOVE_SATTM_1_FLPOP_CO | 남성연령대60이상토요일시간대1유동인구수 | Men over age 60 Saturday one time the population flow          |
+| MAG_60_ABOVE_SATTM_2_FLPOP_CO | 남성연령대60이상토요일시간대2유동인구수 | 60 Saturday over time male population ages 2 flow              |
+| MAG_60_ABOVE_SATTM_3_FLPOP_CO | 남성연령대60이상토요일시간대3유동인구수 | Men over age 60 Saturday 3 times the population flow           |
+| MAG_60_ABOVE_SATTM_4_FLPOP_CO | 남성연령대60이상토요일시간대4유동인구수 | 60 Saturday over time male population ages 4 flow              |
+| MAG_60_ABOVE_SATTM_5_FLPOP_CO | 남성연령대60이상토요일시간대5유동인구수 | Men over age 60 Saturday 5 times the population flow           |
+| MAG_60_ABOVE_SATTM_6_FLPOP_CO | 남성연령대60이상토요일시간대6유동인구수 | More than 60 men ages Saturday 6 times the population flow     |
+| MAG_60_ABOVE_SUNTM_1_FLPOP_CO | 남성연령대60이상일요일시간대1유동인구수 | Men over age 60 population flows first time Sunday             |
+| MAG_60_ABOVE_SUNTM_2_FLPOP_CO | 남성연령대60이상일요일시간대2유동인구수 | Men age 2 Sunday more than 60 times the population flow        |
+| MAG_60_ABOVE_SUNTM_3_FLPOP_CO | 남성연령대60이상일요일시간대3유동인구수 | Men over age 60 Sunday three times the population flow         |
+| MAG_60_ABOVE_SUNTM_4_FLPOP_CO | 남성연령대60이상일요일시간대4유동인구수 | More than 60 times Sunday male population ages 4 flow          |
+| MAG_60_ABOVE_SUNTM_5_FLPOP_CO | 남성연령대60이상일요일시간대5유동인구수 | Men ages 60 or more Sunday five times the population flow      |
+| MAG_60_ABOVE_SUNTM_6_FLPOP_CO | 남성연령대60이상일요일시간대6유동인구수 | Men ages 6 to 60 or more times Sunday floating population      |
+|    FAG_10_MONTM_1_FLPOP_CO    | 여성연령대10월요일시간대1유동인구수     | Women ages 10 Monday one time the population flow              |
+|    FAG_10_MONTM_2_FLPOP_CO    | 여성연령대10월요일시간대2유동인구수     | Women ages 10 Monday 2 times the population flow               |
+|    FAG_10_MONTM_3_FLPOP_CO    | 여성연령대10월요일시간대3유동인구수     | Women ages 10 Monday three times the population flow           |
+|    FAG_10_MONTM_4_FLPOP_CO    | 여성연령대10월요일시간대4유동인구수     | Women ages 10 Monday 4 times the population flow               |
+|    FAG_10_MONTM_5_FLPOP_CO    | 여성연령대10월요일시간대5유동인구수     | Women ages 10 Monday 5 times the population flow               |
+|    FAG_10_MONTM_6_FLPOP_CO    | 여성연령대10월요일시간대6유동인구수     | Women ages 10 Monday 6 times the population flow               |
+|    FAG_10_TUETM_1_FLPOP_CO    | 여성연령대10화요일시간대1유동인구수     | Women ages 10 Tuesday one time the population flow             |
+|    FAG_10_TUETM_2_FLPOP_CO    | 여성연령대10화요일시간대2유동인구수     | Women ages 10 Tuesday 2 times the population flow              |
+|    FAG_10_TUETM_3_FLPOP_CO    | 여성연령대10화요일시간대3유동인구수     | Women ages 10 Tuesday 3 times the population flow              |
+|    FAG_10_TUETM_4_FLPOP_CO    | 여성연령대10화요일시간대4유동인구수     | Women ages 10 Tuesday 4 times the population flow              |
+|    FAG_10_TUETM_5_FLPOP_CO    | 여성연령대10화요일시간대5유동인구수     | Women ages 10 Tuesday 5 times the population flow              |
+|    FAG_10_TUETM_6_FLPOP_CO    | 여성연령대10화요일시간대6유동인구수     | Women ages 10 Tuesday 6 times the population flow              |
+|    FAG_10_WEDTM_1_FLPOP_CO    | 여성연령대10수요일시간대1유동인구수     | Women ages 10 Wednesday one time the population flow           |
+|    FAG_10_WEDTM_2_FLPOP_CO    | 여성연령대10수요일시간대2유동인구수     | Women ages 10 Wednesday 2 times the population flow            |
+|    FAG_10_WEDTM_3_FLPOP_CO    | 여성연령대10수요일시간대3유동인구수     | Women ages 10 Wednesday three times the population flow        |
+|    FAG_10_WEDTM_4_FLPOP_CO    | 여성연령대10수요일시간대4유동인구수     | Women ages 10 Wednesday 4 times the population flow            |
+|    FAG_10_WEDTM_5_FLPOP_CO    | 여성연령대10수요일시간대5유동인구수     | Women ages 10 Wednesday 5 times the population flow            |
+|    FAG_10_WEDTM_6_FLPOP_CO    | 여성연령대10수요일시간대6유동인구수     | Women ages 10 Wednesday 6 times the population flow            |
+|    FAG_10_THUTM_1_FLPOP_CO    | 여성연령대10목요일시간대1유동인구수     | Women ages 10 Thursday zone 1 flow population                  |
+|    FAG_10_THUTM_2_FLPOP_CO    | 여성연령대10목요일시간대2유동인구수     | Women ages 10 Thursday 2 times the population flow             |
+|    FAG_10_THUTM_3_FLPOP_CO    | 여성연령대10목요일시간대3유동인구수     | Women ages 10 Thursday three times the population flow         |
+|    FAG_10_THUTM_4_FLPOP_CO    | 여성연령대10목요일시간대4유동인구수     | Women ages 10 Thursday 4 times the population flow             |
+|    FAG_10_THUTM_5_FLPOP_CO    | 여성연령대10목요일시간대5유동인구수     | Women ages 10 Thursday 5 times the population flow             |
+|    FAG_10_THUTM_6_FLPOP_CO    | 여성연령대10목요일시간대6유동인구수     | Women ages 10 Thursday 6 times the population flow             |
+|    FAG_10_FRITM_1_FLPOP_CO    | 여성연령대10금요일시간대1유동인구수     | Women ages 10 Friday one time the population flow              |
+|    FAG_10_FRITM_2_FLPOP_CO    | 여성연령대10금요일시간대2유동인구수     | Women ages 10 Friday 2 times the population flow               |
+|    FAG_10_FRITM_3_FLPOP_CO    | 여성연령대10금요일시간대3유동인구수     | Women ages 10 Friday three times the population flow           |
+|    FAG_10_FRITM_4_FLPOP_CO    | 여성연령대10금요일시간대4유동인구수     | Women ages 10 Friday 4 times the population flow               |
+|    FAG_10_FRITM_5_FLPOP_CO    | 여성연령대10금요일시간대5유동인구수     | Women ages 10 Friday 5 times the population flow               |
+|    FAG_10_FRITM_6_FLPOP_CO    | 여성연령대10금요일시간대6유동인구수     | Women ages 10 Friday 6 times the population flow               |
+|    FAG_10_SATTM_1_FLPOP_CO    | 여성연령대10토요일시간대1유동인구수     | Women ages 10 Saturday one time the population flow            |
+|    FAG_10_SATTM_2_FLPOP_CO    | 여성연령대10토요일시간대2유동인구수     | Women ages 10 Saturday 2 times the population flow             |
+|    FAG_10_SATTM_3_FLPOP_CO    | 여성연령대10토요일시간대3유동인구수     | Women ages 10 Saturday 3 times the population flow             |
+|    FAG_10_SATTM_4_FLPOP_CO    | 여성연령대10토요일시간대4유동인구수     | Women ages 10 Saturday 4 times the population flow             |
+|    FAG_10_SATTM_5_FLPOP_CO    | 여성연령대10토요일시간대5유동인구수     | Women ages 10 Saturday 5 times the population flow             |
+|    FAG_10_SATTM_6_FLPOP_CO    | 여성연령대10토요일시간대6유동인구수     | Women ages 10 Saturday 6 times the population flow             |
+|    FAG_10_SUNTM_1_FLPOP_CO    | 여성연령대10일요일시간대1유동인구수     | Women ages 10 Sunday one time the population flow              |
+|    FAG_10_SUNTM_2_FLPOP_CO    | 여성연령대10일요일시간대2유동인구수     | Women ages 10 Sunday two times the population flow             |
+|    FAG_10_SUNTM_3_FLPOP_CO    | 여성연령대10일요일시간대3유동인구수     | Women ages 10 Sunday three times the population flow           |
+|    FAG_10_SUNTM_4_FLPOP_CO    | 여성연령대10일요일시간대4유동인구수     | Women ages 10 Sunday 4 times the population flow               |
+|    FAG_10_SUNTM_5_FLPOP_CO    | 여성연령대10일요일시간대5유동인구수     | Women ages 10 Sunday 5 times the population flow               |
+|    FAG_10_SUNTM_6_FLPOP_CO    | 여성연령대10일요일시간대6유동인구수     | Women ages 10 Sunday 6 times the population flow               |
+|    FAG_20_MONTM_1_FLPOP_CO    | 여성연령대20월요일시간대1유동인구수     | Women ages 20 Monday one time the population flow              |
+|    FAG_20_MONTM_2_FLPOP_CO    | 여성연령대20월요일시간대2유동인구수     | Women ages 20 Monday 2 times the population flow               |
+|    FAG_20_MONTM_3_FLPOP_CO    | 여성연령대20월요일시간대3유동인구수     | Women ages 20 Monday three times the population flow           |
+|    FAG_20_MONTM_4_FLPOP_CO    | 여성연령대20월요일시간대4유동인구수     | Women ages 20 Monday 4 times the population flow               |
+|    FAG_20_MONTM_5_FLPOP_CO    | 여성연령대20월요일시간대5유동인구수     | Women ages 20 Monday 5 times the population flow               |
+|    FAG_20_MONTM_6_FLPOP_CO    | 여성연령대20월요일시간대6유동인구수     | Women ages 20 Monday 6 times the population flow               |
+|    FAG_20_TUETM_1_FLPOP_CO    | 여성연령대20화요일시간대1유동인구수     | Women ages 20 Tuesday one time the population flow             |
+|    FAG_20_TUETM_2_FLPOP_CO    | 여성연령대20화요일시간대2유동인구수     | Women ages 20 Tuesday 2 times the population flow              |
+|    FAG_20_TUETM_3_FLPOP_CO    | 여성연령대20화요일시간대3유동인구수     | Women ages 20 Tuesday 3 times the population flow              |
+|    FAG_20_TUETM_4_FLPOP_CO    | 여성연령대20화요일시간대4유동인구수     | Women ages 20 Tuesday 4 times the population flow              |
+|    FAG_20_TUETM_5_FLPOP_CO    | 여성연령대20화요일시간대5유동인구수     | Women ages 20 Tuesday 5 times the population flow              |
+|    FAG_20_TUETM_6_FLPOP_CO    | 여성연령대20화요일시간대6유동인구수     | Women ages 20 Tuesday 6 times the population flow              |
+|    FAG_20_WEDTM_1_FLPOP_CO    | 여성연령대20수요일시간대1유동인구수     | Women ages 20 Wednesday one time the population flow           |
+|    FAG_20_WEDTM_2_FLPOP_CO    | 여성연령대20수요일시간대2유동인구수     | Women ages 20 Wednesday 2 times the population flow            |
+|    FAG_20_WEDTM_3_FLPOP_CO    | 여성연령대20수요일시간대3유동인구수     | Women ages 20 Wednesday three times the population flow        |
+|    FAG_20_WEDTM_4_FLPOP_CO    | 여성연령대20수요일시간대4유동인구수     | Women ages 20 Wednesday 4 times the population flow            |
+|    FAG_20_WEDTM_5_FLPOP_CO    | 여성연령대20수요일시간대5유동인구수     | Women ages 20 Wednesday 5 times the population flow            |
+|    FAG_20_WEDTM_6_FLPOP_CO    | 여성연령대20수요일시간대6유동인구수     | Women ages 20 Wednesday 6 times the population flow            |
+|    FAG_20_THUTM_1_FLPOP_CO    | 여성연령대20목요일시간대1유동인구수     | Women ages 20 Thursday zone 1 flow population                  |
+|    FAG_20_THUTM_2_FLPOP_CO    | 여성연령대20목요일시간대2유동인구수     | Women ages 20 Thursday 2 times the population flow             |
+|    FAG_20_THUTM_3_FLPOP_CO    | 여성연령대20목요일시간대3유동인구수     | Women ages 20 Thursday three times the population flow         |
+|    FAG_20_THUTM_4_FLPOP_CO    | 여성연령대20목요일시간대4유동인구수     | Women ages 20 Thursday 4 times the population flow             |
+|    FAG_20_THUTM_5_FLPOP_CO    | 여성연령대20목요일시간대5유동인구수     | Women ages 20 Thursday 5 times the population flow             |
+|    FAG_20_THUTM_6_FLPOP_CO    | 여성연령대20목요일시간대6유동인구수     | Women ages 20 Thursday 6 times the population flow             |
+|    FAG_20_FRITM_1_FLPOP_CO    | 여성연령대20금요일시간대1유동인구수     | Women ages 20 Friday one time the population flow              |
+|    FAG_20_FRITM_2_FLPOP_CO    | 여성연령대20금요일시간대2유동인구수     | Women ages 20 Friday 2 times the population flow               |
+|    FAG_20_FRITM_3_FLPOP_CO    | 여성연령대20금요일시간대3유동인구수     | Women ages 20 Friday three times the population flow           |
+|    FAG_20_FRITM_4_FLPOP_CO    | 여성연령대20금요일시간대4유동인구수     | Women ages 20 Friday 4 times the population flow               |
+|    FAG_20_FRITM_5_FLPOP_CO    | 여성연령대20금요일시간대5유동인구수     | Women ages 20 Friday 5 times the population flow               |
+|    FAG_20_FRITM_6_FLPOP_CO    | 여성연령대20금요일시간대6유동인구수     | Women ages 20 Friday 6 times the population flow               |
+|    FAG_20_SATTM_1_FLPOP_CO    | 여성연령대20토요일시간대1유동인구수     | Women ages 20 Saturday one time the population flow            |
+|    FAG_20_SATTM_2_FLPOP_CO    | 여성연령대20토요일시간대2유동인구수     | Women ages 20 Saturday 2 times the population flow             |
+|    FAG_20_SATTM_3_FLPOP_CO    | 여성연령대20토요일시간대3유동인구수     | Women ages 20 Saturday 3 times the population flow             |
+|    FAG_20_SATTM_4_FLPOP_CO    | 여성연령대20토요일시간대4유동인구수     | Women ages 20 Saturday 4 times the population flow             |
+|    FAG_20_SATTM_5_FLPOP_CO    | 여성연령대20토요일시간대5유동인구수     | Women ages 20 Saturday 5 times the population flow             |
+|    FAG_20_SATTM_6_FLPOP_CO    | 여성연령대20토요일시간대6유동인구수     | Women ages 20 Saturday 6 times the population flow             |
+|    FAG_20_SUNTM_1_FLPOP_CO    | 여성연령대20일요일시간대1유동인구수     | Women ages 20 Sunday one time the population flow              |
+|    FAG_20_SUNTM_2_FLPOP_CO    | 여성연령대20일요일시간대2유동인구수     | Women ages 20 Sunday two times the population flow             |
+|    FAG_20_SUNTM_3_FLPOP_CO    | 여성연령대20일요일시간대3유동인구수     | Women ages 20 Sunday three times the population flow           |
+|    FAG_20_SUNTM_4_FLPOP_CO    | 여성연령대20일요일시간대4유동인구수     | Women ages 20 Sunday 4 times the population flow               |
+|    FAG_20_SUNTM_5_FLPOP_CO    | 여성연령대20일요일시간대5유동인구수     | Women ages 20 Sunday 5 times the population flow               |
+|    FAG_20_SUNTM_6_FLPOP_CO    | 여성연령대20일요일시간대6유동인구수     | Women ages 20 Sunday 6 times the population flow               |
+|    FAG_30_MONTM_1_FLPOP_CO    | 여성연령대30월요일시간대1유동인구수     | Women ages 30 Monday one time the population flow              |
+|    FAG_30_MONTM_2_FLPOP_CO    | 여성연령대30월요일시간대2유동인구수     | Women ages 30 Monday 2 times the population flow               |
+|    FAG_30_MONTM_3_FLPOP_CO    | 여성연령대30월요일시간대3유동인구수     | Women ages 30 Monday three times the population flow           |
+|    FAG_30_MONTM_4_FLPOP_CO    | 여성연령대30월요일시간대4유동인구수     | Women ages 30 Monday 4 times the population flow               |
+|    FAG_30_MONTM_5_FLPOP_CO    | 여성연령대30월요일시간대5유동인구수     | Women ages 30 Monday 5 times the population flow               |
+|    FAG_30_MONTM_6_FLPOP_CO    | 여성연령대30월요일시간대6유동인구수     | Women ages 30 Monday 6 times the population flow               |
+|    FAG_30_TUETM_1_FLPOP_CO    | 여성연령대30화요일시간대1유동인구수     | Women ages 30 Tuesday one time the population flow             |
+|    FAG_30_TUETM_2_FLPOP_CO    | 여성연령대30화요일시간대2유동인구수     | Women ages 30 Tuesday 2 times the population flow              |
+|    FAG_30_TUETM_3_FLPOP_CO    | 여성연령대30화요일시간대3유동인구수     | Women ages 30 Tuesday 3 times the population flow              |
+|    FAG_30_TUETM_4_FLPOP_CO    | 여성연령대30화요일시간대4유동인구수     | Women ages 30 Tuesday 4 times the population flow              |
+|    FAG_30_TUETM_5_FLPOP_CO    | 여성연령대30화요일시간대5유동인구수     | Women ages 30 Tuesday 5 times the population flow              |
+|    FAG_30_TUETM_6_FLPOP_CO    | 여성연령대30화요일시간대6유동인구수     | Women ages 30 Tuesday 6 times the population flow              |
+|    FAG_30_WEDTM_1_FLPOP_CO    | 여성연령대30수요일시간대1유동인구수     | Women ages 30 Wednesday one time the population flow           |
+|    FAG_30_WEDTM_2_FLPOP_CO    | 여성연령대30수요일시간대2유동인구수     | Women ages 30 Wednesday 2 times the population flow            |
+|    FAG_30_WEDTM_3_FLPOP_CO    | 여성연령대30수요일시간대3유동인구수     | Women ages 30 Wednesday 3 times the population flow            |
+|    FAG_30_WEDTM_4_FLPOP_CO    | 여성연령대30수요일시간대4유동인구수     | Women ages 30 Wednesday 4 times the population flow            |
+|    FAG_30_WEDTM_5_FLPOP_CO    | 여성연령대30수요일시간대5유동인구수     | Women ages 30 Wednesday 5 times the population flow            |
+|    FAG_30_WEDTM_6_FLPOP_CO    | 여성연령대30수요일시간대6유동인구수     | Women ages 30 Wednesday 6 times the population flow            |
+|    FAG_30_THUTM_1_FLPOP_CO    | 여성연령대30목요일시간대1유동인구수     | Women ages 30 Thursday zone 1 flow population                  |
+|    FAG_30_THUTM_2_FLPOP_CO    | 여성연령대30목요일시간대2유동인구수     | Women ages 30 Thursday 2 times the population flow             |
+|    FAG_30_THUTM_3_FLPOP_CO    | 여성연령대30목요일시간대3유동인구수     | Women ages 30 Thursday three times the population flow         |
+|    FAG_30_THUTM_4_FLPOP_CO    | 여성연령대30목요일시간대4유동인구수     | Women ages 30 Thursday 4 times the population flow             |
+|    FAG_30_THUTM_5_FLPOP_CO    | 여성연령대30목요일시간대5유동인구수     | Women ages 30 Thursday 5 times the population flow             |
+|    FAG_30_THUTM_6_FLPOP_CO    | 여성연령대30목요일시간대6유동인구수     | Women ages 30 Thursday 6 times the population flow             |
+|    FAG_30_FRITM_1_FLPOP_CO    | 여성연령대30금요일시간대1유동인구수     | Women ages 30 Friday one time the population flow              |
+|    FAG_30_FRITM_2_FLPOP_CO    | 여성연령대30금요일시간대2유동인구수     | Women ages 30 Friday 2 times the population flow               |
+|    FAG_30_FRITM_3_FLPOP_CO    | 여성연령대30금요일시간대3유동인구수     | Women ages 30 Friday three times the population flow           |
+|    FAG_30_FRITM_4_FLPOP_CO    | 여성연령대30금요일시간대4유동인구수     | Women ages 30 Friday 4 times the population flow               |
+|    FAG_30_FRITM_5_FLPOP_CO    | 여성연령대30금요일시간대5유동인구수     | Women ages 30 Friday 5 times the population flow               |
+|    FAG_30_FRITM_6_FLPOP_CO    | 여성연령대30금요일시간대6유동인구수     | Women ages 30 Friday 6 times the population flow               |
+|    FAG_30_SATTM_1_FLPOP_CO    | 여성연령대30토요일시간대1유동인구수     | Women ages 30 Saturday one time the population flow            |
+|    FAG_30_SATTM_2_FLPOP_CO    | 여성연령대30토요일시간대2유동인구수     | Women ages 2 to 30 Saturday flow zone population               |
+|    FAG_30_SATTM_3_FLPOP_CO    | 여성연령대30토요일시간대3유동인구수     | Women ages 30 Saturday 3 times the population flow             |
+|    FAG_30_SATTM_4_FLPOP_CO    | 여성연령대30토요일시간대4유동인구수     | Women ages 30 Saturday 4 times the population flow             |
+|    FAG_30_SATTM_5_FLPOP_CO    | 여성연령대30토요일시간대5유동인구수     | Women ages 30 Saturday 5 times the population flow             |
+|    FAG_30_SATTM_6_FLPOP_CO    | 여성연령대30토요일시간대6유동인구수     | Women ages 30 Saturday 6 times the population flow             |
+|    FAG_30_SUNTM_1_FLPOP_CO    | 여성연령대30일요일시간대1유동인구수     | Women ages 30 Sunday one time the population flow              |
+|    FAG_30_SUNTM_2_FLPOP_CO    | 여성연령대30일요일시간대2유동인구수     | Women ages 30 Sunday two times the population flow             |
+|    FAG_30_SUNTM_3_FLPOP_CO    | 여성연령대30일요일시간대3유동인구수     | Women ages 30 Sunday three times the population flow           |
+|    FAG_30_SUNTM_4_FLPOP_CO    | 여성연령대30일요일시간대4유동인구수     | Women ages 30 Sunday 4 times the population flow               |
+|    FAG_30_SUNTM_5_FLPOP_CO    | 여성연령대30일요일시간대5유동인구수     | Women ages 30 Sunday 5 times the population flow               |
+|    FAG_30_SUNTM_6_FLPOP_CO    | 여성연령대30일요일시간대6유동인구수     | Women ages 30 Sunday 6 times the population flow               |
+|    FAG_40_MONTM_1_FLPOP_CO    | 여성연령대40월요일시간대1유동인구수     | Women ages 40 Monday one time the population flow              |
+|    FAG_40_MONTM_2_FLPOP_CO    | 여성연령대40월요일시간대2유동인구수     | Women ages 40 Monday 2 times the population flow               |
+|    FAG_40_MONTM_3_FLPOP_CO    | 여성연령대40월요일시간대3유동인구수     | Women ages 40 Monday three times the population flow           |
+|    FAG_40_MONTM_4_FLPOP_CO    | 여성연령대40월요일시간대4유동인구수     | Women ages 40 Monday 4 times the population flow               |
+|    FAG_40_MONTM_5_FLPOP_CO    | 여성연령대40월요일시간대5유동인구수     | Women ages 40 Monday 5 times the population flow               |
+|    FAG_40_MONTM_6_FLPOP_CO    | 여성연령대40월요일시간대6유동인구수     | Women ages 40 Monday 6 times the population flow               |
+|    FAG_40_TUETM_1_FLPOP_CO    | 여성연령대40화요일시간대1유동인구수     | Women ages 40 Tuesday one time the population flow             |
+|    FAG_40_TUETM_2_FLPOP_CO    | 여성연령대40화요일시간대2유동인구수     | Women ages 40 Tuesday 2 times the population flow              |
+|    FAG_40_TUETM_3_FLPOP_CO    | 여성연령대40화요일시간대3유동인구수     | Women ages 40 Tuesday 3 times the population flow              |
+|    FAG_40_TUETM_4_FLPOP_CO    | 여성연령대40화요일시간대4유동인구수     | Women ages 40 Tuesday 4 times the population flow              |
+|    FAG_40_TUETM_5_FLPOP_CO    | 여성연령대40화요일시간대5유동인구수     | Women ages 40 Tuesday 5 times the population flow              |
+|    FAG_40_TUETM_6_FLPOP_CO    | 여성연령대40화요일시간대6유동인구수     | Women ages 40 Tuesday 6 times the population flow              |
+|    FAG_40_WEDTM_1_FLPOP_CO    | 여성연령대40수요일시간대1유동인구수     | Women ages 40 Wednesday one time the population flow           |
+|    FAG_40_WEDTM_2_FLPOP_CO    | 여성연령대40수요일시간대2유동인구수     | Women ages 40 Wednesday 2 times the population flow            |
+|    FAG_40_WEDTM_3_FLPOP_CO    | 여성연령대40수요일시간대3유동인구수     | Women ages 40 Wednesday three times the population flow        |
+|    FAG_40_WEDTM_4_FLPOP_CO    | 여성연령대40수요일시간대4유동인구수     | Women ages 40 Wednesday 4 times the population flow            |
+|    FAG_40_WEDTM_5_FLPOP_CO    | 여성연령대40수요일시간대5유동인구수     | Women ages 40 Wednesday 5 times the population flow            |
+|    FAG_40_WEDTM_6_FLPOP_CO    | 여성연령대40수요일시간대6유동인구수     | Women ages 40 Wednesday six times the population flow          |
+|    FAG_40_THUTM_1_FLPOP_CO    | 여성연령대40목요일시간대1유동인구수     | Women ages 40 Thursday zone 1 flow population                  |
+|    FAG_40_THUTM_2_FLPOP_CO    | 여성연령대40목요일시간대2유동인구수     | Women ages 40 Thursday 2 times the population flow             |
+|    FAG_40_THUTM_3_FLPOP_CO    | 여성연령대40목요일시간대3유동인구수     | Women ages 40 Thursday three times the population flow         |
+|    FAG_40_THUTM_4_FLPOP_CO    | 여성연령대40목요일시간대4유동인구수     | Women ages 40 Thursday 4 times the population flow             |
+|    FAG_40_THUTM_5_FLPOP_CO    | 여성연령대40목요일시간대5유동인구수     | Women ages 40 Thursday 5 times the population flow             |
+|    FAG_40_THUTM_6_FLPOP_CO    | 여성연령대40목요일시간대6유동인구수     | Women ages 40 Thursday 6 times the population flow             |
+|    FAG_40_FRITM_1_FLPOP_CO    | 여성연령대40금요일시간대1유동인구수     | Women ages 40 Friday one time the population flow              |
+|    FAG_40_FRITM_2_FLPOP_CO    | 여성연령대40금요일시간대2유동인구수     | Women ages 40 Friday 2 times the population flow               |
+|    FAG_40_FRITM_3_FLPOP_CO    | 여성연령대40금요일시간대3유동인구수     | Women ages 40 Friday three times the population flow           |
+|    FAG_40_FRITM_4_FLPOP_CO    | 여성연령대40금요일시간대4유동인구수     | Women ages 40 Friday 4 times the population flow               |
+|    FAG_40_FRITM_5_FLPOP_CO    | 여성연령대40금요일시간대5유동인구수     | Women ages 40 Friday five times the population flow            |
+|    FAG_40_FRITM_6_FLPOP_CO    | 여성연령대40금요일시간대6유동인구수     | Women ages 40 Friday six times the population flow             |
+|    FAG_40_SATTM_1_FLPOP_CO    | 여성연령대40토요일시간대1유동인구수     | Women ages 40 Saturday one time the population flow            |
+|    FAG_40_SATTM_2_FLPOP_CO    | 여성연령대40토요일시간대2유동인구수     | Women ages 2 to 40 Saturday flow zone population               |
+|    FAG_40_SATTM_3_FLPOP_CO    | 여성연령대40토요일시간대3유동인구수     | Women ages 40 Saturday 3 times the population flow             |
+|    FAG_40_SATTM_4_FLPOP_CO    | 여성연령대40토요일시간대4유동인구수     | Women ages 40 Saturday 4 times the population flow             |
+|    FAG_40_SATTM_5_FLPOP_CO    | 여성연령대40토요일시간대5유동인구수     | Women ages 40 Saturday 5 times the population flow             |
+|    FAG_40_SATTM_6_FLPOP_CO    | 여성연령대40토요일시간대6유동인구수     | Women ages 40 Saturday 6 times the population flow             |
+|    FAG_40_SUNTM_1_FLPOP_CO    | 여성연령대40일요일시간대1유동인구수     | Women ages 40 Sunday one time the population flow              |
+|    FAG_40_SUNTM_2_FLPOP_CO    | 여성연령대40일요일시간대2유동인구수     | Women ages 40 Sunday two times the population flow             |
+|    FAG_40_SUNTM_3_FLPOP_CO    | 여성연령대40일요일시간대3유동인구수     | Women ages 40 Sunday three times the population flow           |
+|    FAG_40_SUNTM_4_FLPOP_CO    | 여성연령대40일요일시간대4유동인구수     | Women ages 40 Sunday 4 times the population flow               |
+|    FAG_40_SUNTM_5_FLPOP_CO    | 여성연령대40일요일시간대5유동인구수     | Women ages 40 Sunday 5 times the population flow               |
+|    FAG_40_SUNTM_6_FLPOP_CO    | 여성연령대40일요일시간대6유동인구수     | Women ages 40 Sunday 6 times the population flow               |
+|    FAG_50_MONTM_1_FLPOP_CO    | 여성연령대50월요일시간대1유동인구수     | Women ages 50 Monday one time the population flow              |
+|    FAG_50_MONTM_2_FLPOP_CO    | 여성연령대50월요일시간대2유동인구수     | Women ages 50 Monday 2 times the population flow               |
+|    FAG_50_MONTM_3_FLPOP_CO    | 여성연령대50월요일시간대3유동인구수     | Women ages 50 Monday three times the population flow           |
+|    FAG_50_MONTM_4_FLPOP_CO    | 여성연령대50월요일시간대4유동인구수     | Women ages 50 Monday 4 times the population flow               |
+|    FAG_50_MONTM_5_FLPOP_CO    | 여성연령대50월요일시간대5유동인구수     | Women ages 50 Monday 5 times the population flow               |
+|    FAG_50_MONTM_6_FLPOP_CO    | 여성연령대50월요일시간대6유동인구수     | Women ages 50 Monday 6 times the population flow               |
+|    FAG_50_TUETM_1_FLPOP_CO    | 여성연령대50화요일시간대1유동인구수     | Women ages 50 Tuesday one time the population flow             |
+|    FAG_50_TUETM_2_FLPOP_CO    | 여성연령대50화요일시간대2유동인구수     | Women ages 50 Tuesday 2 times the population flow              |
+|    FAG_50_TUETM_3_FLPOP_CO    | 여성연령대50화요일시간대3유동인구수     | Women ages 50 Tuesday 3 times the population flow              |
+|    FAG_50_TUETM_4_FLPOP_CO    | 여성연령대50화요일시간대4유동인구수     | Women ages 50 Tuesday 4 times the population flow              |
+|    FAG_50_TUETM_5_FLPOP_CO    | 여성연령대50화요일시간대5유동인구수     | Women ages 50 Tuesday 5 times the population flow              |
+|    FAG_50_TUETM_6_FLPOP_CO    | 여성연령대50화요일시간대6유동인구수     | Women ages 50 Tuesday 6 times the population flow              |
+|    FAG_50_WEDTM_1_FLPOP_CO    | 여성연령대50수요일시간대1유동인구수     | Women ages 50 Wednesday one time the population flow           |
+|    FAG_50_WEDTM_2_FLPOP_CO    | 여성연령대50수요일시간대2유동인구수     | Women ages 50 Wednesday 2 times the population flow            |
+|    FAG_50_WEDTM_3_FLPOP_CO    | 여성연령대50수요일시간대3유동인구수     | Women ages 50 Wednesday three times the population flow        |
+|    FAG_50_WEDTM_4_FLPOP_CO    | 여성연령대50수요일시간대4유동인구수     | Women ages 50 Wednesday 4 times the population flow            |
+|    FAG_50_WEDTM_5_FLPOP_CO    | 여성연령대50수요일시간대5유동인구수     | Women ages 50 Wednesday 5 times the population flow            |
+|    FAG_50_WEDTM_6_FLPOP_CO    | 여성연령대50수요일시간대6유동인구수     | Women ages 50 Wednesday six times the population flow          |
+|    FAG_50_THUTM_1_FLPOP_CO    | 여성연령대50목요일시간대1유동인구수     | Women ages 50 Thursday zone 1 flow population                  |
+|    FAG_50_THUTM_2_FLPOP_CO    | 여성연령대50목요일시간대2유동인구수     | Women ages 50 Thursday 2 times the population flow             |
+|    FAG_50_THUTM_3_FLPOP_CO    | 여성연령대50목요일시간대3유동인구수     | Women ages 50 Thursday three times the population flow         |
+|    FAG_50_THUTM_4_FLPOP_CO    | 여성연령대50목요일시간대4유동인구수     | Women ages 50 Thursday 4 times the population flow             |
+|    FAG_50_THUTM_5_FLPOP_CO    | 여성연령대50목요일시간대5유동인구수     | Women ages 50 Thursday 5 times the population flow             |
+|    FAG_50_THUTM_6_FLPOP_CO    | 여성연령대50목요일시간대6유동인구수     | Women ages 50 Thursday 6 times the population flow             |
+|    FAG_50_FRITM_1_FLPOP_CO    | 여성연령대50금요일시간대1유동인구수     | Women ages 50 Friday one time the population flow              |
+|    FAG_50_FRITM_2_FLPOP_CO    | 여성연령대50금요일시간대2유동인구수     | Women ages 50 Friday 2 times the population flow               |
+|    FAG_50_FRITM_3_FLPOP_CO    | 여성연령대50금요일시간대3유동인구수     | Women ages 50 Friday three times the population flow           |
+|    FAG_50_FRITM_4_FLPOP_CO    | 여성연령대50금요일시간대4유동인구수     | Women ages 50 Friday 4 times the population flow               |
+|    FAG_50_FRITM_5_FLPOP_CO    | 여성연령대50금요일시간대5유동인구수     | Women ages 50 Friday five times the population flow            |
+|    FAG_50_FRITM_6_FLPOP_CO    | 여성연령대50금요일시간대6유동인구수     | Women ages 50 Friday six times the population flow             |
+|    FAG_50_SATTM_1_FLPOP_CO    | 여성연령대50토요일시간대1유동인구수     | Women ages 50 Saturday one time the population flow            |
+|    FAG_50_SATTM_2_FLPOP_CO    | 여성연령대50토요일시간대2유동인구수     | Women ages 2 to 50 Saturday flow zone population               |
+|    FAG_50_SATTM_3_FLPOP_CO    | 여성연령대50토요일시간대3유동인구수     | Women ages 50 Saturday 3 times the population flow             |
+|    FAG_50_SATTM_4_FLPOP_CO    | 여성연령대50토요일시간대4유동인구수     | Women ages 50 Saturday 4 times the population flow             |
+|    FAG_50_SATTM_5_FLPOP_CO    | 여성연령대50토요일시간대5유동인구수     | Women ages 50 Saturday 5 times the population flow             |
+|    FAG_50_SATTM_6_FLPOP_CO    | 여성연령대50토요일시간대6유동인구수     | Women ages 50 Saturday 6 times the population flow             |
+|    FAG_50_SUNTM_1_FLPOP_CO    | 여성연령대50일요일시간대1유동인구수     | Women ages 50 Sunday one time the population flow              |
+|    FAG_50_SUNTM_2_FLPOP_CO    | 여성연령대50일요일시간대2유동인구수     | Women ages 50 Sunday two times the population flow             |
+|    FAG_50_SUNTM_3_FLPOP_CO    | 여성연령대50일요일시간대3유동인구수     | Women ages 50 Sunday three times the population flow           |
+|    FAG_50_SUNTM_4_FLPOP_CO    | 여성연령대50일요일시간대4유동인구수     | Women ages 50 Sunday 4 times the population flow               |
+|    FAG_50_SUNTM_5_FLPOP_CO    | 여성연령대50일요일시간대5유동인구수     | Women ages 50 Sunday 5 times the population flow               |
+|    FAG_50_SUNTM_6_FLPOP_CO    | 여성연령대50일요일시간대6유동인구수     | Women ages 50 Sunday 6 times the population flow               |
+| FAG_60_ABOVE_MONTM_1_FLPOP_CO | 여성연령대60이상월요일시간대1유동인구수 | Women over age 60 population flows first time Monday           |
+| FAG_60_ABOVE_MONTM_2_FLPOP_CO | 여성연령대60이상월요일시간대2유동인구수 | Women ages 60 Monday more than 2 times the population flow     |
+| FAG_60_ABOVE_MONTM_3_FLPOP_CO | 여성연령대60이상월요일시간대3유동인구수 | Women over age 60 Monday three times the population flow       |
+| FAG_60_ABOVE_MONTM_4_FLPOP_CO | 여성연령대60이상월요일시간대4유동인구수 | Women over age 60 Monday 4 times the population flow           |
+| FAG_60_ABOVE_MONTM_5_FLPOP_CO | 여성연령대60이상월요일시간대5유동인구수 | Women ages 60 Monday more than five times the population flow  |
+| FAG_60_ABOVE_MONTM_6_FLPOP_CO | 여성연령대60이상월요일시간대6유동인구수 | Women over age 60 Monday 6 times the population flow           |
+| FAG_60_ABOVE_TUETM_1_FLPOP_CO | 여성연령대60이상화요일시간대1유동인구수 | Women over age 60 population flows first time Tuesday          |
+| FAG_60_ABOVE_TUETM_2_FLPOP_CO | 여성연령대60이상화요일시간대2유동인구수 | Female Aged Tuesday more than 60 times the population flow 2   |
+| FAG_60_ABOVE_TUETM_3_FLPOP_CO | 여성연령대60이상화요일시간대3유동인구수 | Women over age 60 Tuesday 3 times the population flow          |
+| FAG_60_ABOVE_TUETM_4_FLPOP_CO | 여성연령대60이상화요일시간대4유동인구수 | Women ages 60 Tuesday over four times the population flow      |
+| FAG_60_ABOVE_TUETM_5_FLPOP_CO | 여성연령대60이상화요일시간대5유동인구수 | Women ages 5 Tuesday more than 60 times the population flow    |
+| FAG_60_ABOVE_TUETM_6_FLPOP_CO | 여성연령대60이상화요일시간대6유동인구수 | Women over age 60 Tuesday 6 times the population flow          |
+| FAG_60_ABOVE_WEDTM_1_FLPOP_CO | 여성연령대60이상수요일시간대1유동인구수 | Women ages 60 or more times 1 Wednesday population flow        |
+| FAG_60_ABOVE_WEDTM_2_FLPOP_CO | 여성연령대60이상수요일시간대2유동인구수 | Female Aged Wednesday more than 60 times the population flow 2 |
+| FAG_60_ABOVE_WEDTM_3_FLPOP_CO | 여성연령대60이상수요일시간대3유동인구수 | Female Aged Wednesday more than 60 times the population flow 3 |
+| FAG_60_ABOVE_WEDTM_4_FLPOP_CO | 여성연령대60이상수요일시간대4유동인구수 | Women over age 60 Wednesday 4 times the population flow        |
+| FAG_60_ABOVE_WEDTM_5_FLPOP_CO | 여성연령대60이상수요일시간대5유동인구수 | Female Aged Wednesday more than 60 times the population flow 5 |
+| FAG_60_ABOVE_WEDTM_6_FLPOP_CO | 여성연령대60이상수요일시간대6유동인구수 | Female Aged Wednesday more than 60 times the population flow 6 |
+| FAG_60_ABOVE_THUTM_1_FLPOP_CO | 여성연령대60이상목요일시간대1유동인구수 | Female Aged Thursday more than 60 times the population flow 1  |
+| FAG_60_ABOVE_THUTM_2_FLPOP_CO | 여성연령대60이상목요일시간대2유동인구수 | Female Aged Thursday more than 60 times the population flow 2  |
+| FAG_60_ABOVE_THUTM_3_FLPOP_CO | 여성연령대60이상목요일시간대3유동인구수 | Women ages 60 Thursday least three times the population flow   |
+| FAG_60_ABOVE_THUTM_4_FLPOP_CO | 여성연령대60이상목요일시간대4유동인구수 | Women ages 60 Thursday over four times the population flow     |
+| FAG_60_ABOVE_THUTM_5_FLPOP_CO | 여성연령대60이상목요일시간대5유동인구수 | Women age 5 Thursday more than 60 times the population flow    |
+| FAG_60_ABOVE_THUTM_6_FLPOP_CO | 여성연령대60이상목요일시간대6유동인구수 | Women over age 60 Thursday 6 times the population flow         |
+| FAG_60_ABOVE_FRITM_1_FLPOP_CO | 여성연령대60이상금요일시간대1유동인구수 | Women ages 60 Friday least one flow zone population            |
+| FAG_60_ABOVE_FRITM_2_FLPOP_CO | 여성연령대60이상금요일시간대2유동인구수 | Women ages 60 Friday least two times the population flow       |
+| FAG_60_ABOVE_FRITM_3_FLPOP_CO | 여성연령대60이상금요일시간대3유동인구수 | Women ages 60 Friday least three times the population flow     |
+| FAG_60_ABOVE_FRITM_4_FLPOP_CO | 여성연령대60이상금요일시간대4유동인구수 | Women ages 60 Friday more than 4 times the population flow     |
+| FAG_60_ABOVE_FRITM_5_FLPOP_CO | 여성연령대60이상금요일시간대5유동인구수 | Women age 60 or later Friday 5 times the population flow       |
+| FAG_60_ABOVE_FRITM_6_FLPOP_CO | 여성연령대60이상금요일시간대6유동인구수 | Women ages 60 or more times Friday 6 floating population       |
+| FAG_60_ABOVE_SATTM_1_FLPOP_CO | 여성연령대60이상토요일시간대1유동인구수 | Women ages 60 or more times Saturday 1 population flow         |
+| FAG_60_ABOVE_SATTM_2_FLPOP_CO | 여성연령대60이상토요일시간대2유동인구수 | Women ages 60 Saturday more than 2 times the population flow   |
+| FAG_60_ABOVE_SATTM_3_FLPOP_CO | 여성연령대60이상토요일시간대3유동인구수 | Women over age 60 Saturday 3 times the population flow         |
+| FAG_60_ABOVE_SATTM_4_FLPOP_CO | 여성연령대60이상토요일시간대4유동인구수 | Women over age 60 Saturday 4 times the population flow         |
+| FAG_60_ABOVE_SATTM_5_FLPOP_CO | 여성연령대60이상토요일시간대5유동인구수 | Women over age 60 Saturday 5 times the population flow         |
+| FAG_60_ABOVE_SATTM_6_FLPOP_CO | 여성연령대60이상토요일시간대6유동인구수 | Women over age 60 Saturday 6 times the population flow         |
+| FAG_60_ABOVE_SUNTM_1_FLPOP_CO | 여성연령대60이상일요일시간대1유동인구수 | Women ages 60 or more times Sunday 1 population flow           |
+| FAG_60_ABOVE_SUNTM_2_FLPOP_CO | 여성연령대60이상일요일시간대2유동인구수 | Women ages 60 or more times Sunday 2 population flow           |
+| FAG_60_ABOVE_SUNTM_3_FLPOP_CO | 여성연령대60이상일요일시간대3유동인구수 | Women over age 60 Sunday three times the population flow       |
+| FAG_60_ABOVE_SUNTM_4_FLPOP_CO | 여성연령대60이상일요일시간대4유동인구수 | Women over age 60 Sunday 4 times the population flow           |
+| FAG_60_ABOVE_SUNTM_5_FLPOP_CO | 여성연령대60이상일요일시간대5유동인구수 | Women ages 60 or more Sunday five times the population flow    |
+| FAG_60_ABOVE_SUNTM_6_FLPOP_CO | 여성연령대60이상일요일시간대6유동인구수 | Women over age 60 Sunday 6 times the population flow           |
+
+
+
+
+
+
+
